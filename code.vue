@@ -2,17 +2,41 @@
   <div id="rootContainerItem" class="tw-relative tw-bg-slate-50 tw-px-5">
     <div class="tw-w-full tw-max-w-5xl tw-mx-auto tw-pt-8 tw-relative">
       <div class="tw-w-full tw-flex tw-justify-between">
-        <h1
+        <h3
           :class="[
             'tw-font-bold tw-text-gray-900 tw-whitespace-nowrap tw-m-0',
             flag ? 'tw-text-xl' : 'tw-text-2xl tw-w-custom-160',
           ]"
+          style="outline: none; line-height: 1.2;"
+          :contenteditable="true"
+          @blur="handleTitleChange"
         >
           {{ title || "极简工作流" }}
-        </h1>
-        <el-button text type="primary" @click="exportWorkflow()">
-          导出工作流
-        </el-button>
+        </h3>
+        <el-dropdown v-if="!flag" trigger="click" data-edit-id="39">
+          <el-button circle size="small" data-edit-id="40">
+            <el-icon data-edit-id="41">
+              <setting data-edit-id="42" />
+            </el-icon>
+          </el-button>
+          <template #dropdown>
+            <el-dropdown-menu data-edit-id="44">
+              <el-dropdown-item @click="exportWorkflow()" data-edit-id="46"
+                >导出工作流</el-dropdown-item
+              >
+              <el-dropdown-item @click="handleEditingDialog" data-edit-id="46"
+                >可选 Agent 列表</el-dropdown-item
+              >
+              <slot v-for="(item, index) in apps" :key="item.label">
+                <el-dropdown-item
+                  @click="openAppItem(item)"
+                  :divided="index === 0"
+                  >{{ item.label }}</el-dropdown-item
+                >
+              </slot>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
       </div>
       <div
         :class="[
@@ -137,7 +161,10 @@
           align-center
         >
           <el-step
-            :class="['tw-cursor-pointer', index === Number(activeStepIndex) ? 'activeStepItem' : '']"
+            :class="[
+              'tw-cursor-pointer',
+              index === Number(activeStepIndex) ? 'activeStepItem' : '',
+            ]"
             @click="refreshCurrentWorkflow(index)"
             v-for="(wf, index) in stepData"
             :key="index"
@@ -168,6 +195,71 @@
     >
       <el-empty description="请在上方输入 Agent ID 以加载工作流" />
     </div>
+
+    <el-dialog v-model="showAppConfig" title="可选 Agent 列表" width="450px">
+      <div class="tw-flex tw-justify-between tw-mb-4" data-edit-id="64">
+        <el-button
+          type="primary"
+          size="small"
+          @click="addItem('apps')"
+          data-edit-id="65"
+          >新增 Agent</el-button
+        >
+        <el-button
+          type="warning"
+          size="small"
+          plain
+          @click="resetToDefault()"
+          data-edit-id="102"
+          >恢复默认</el-button
+        >
+      </div>
+      <el-table :data="editingApps" border size="small" data-edit-id="66">
+        <el-table-column label="Agent 名称" data-edit-id="67">
+          <template #default="scope">
+            <el-input
+              v-model="scope.row.label"
+              size="small"
+              data-edit-id="69"
+            />
+          </template>
+        </el-table-column>
+        <el-table-column label="Agent ID" data-edit-id="70">
+          <template #default="scope">
+            <el-input
+              v-model="scope.row.value"
+              size="small"
+              data-edit-id="72"
+            />
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="80" data-edit-id="73">
+          <template #default="scope">
+            <el-button
+              type="danger"
+              link
+              @click="removeItem(scope.$index)"
+              data-edit-id="75"
+              >删除</el-button
+            >
+          </template>
+        </el-table-column>
+      </el-table>
+      <template #footer>
+        <div class="dialog-footer" data-edit-id="111">
+          <el-button @click="showAppConfig = false" data-edit-id="112"
+            >取消</el-button
+          >
+          <el-button
+            type="primary"
+            @click="handleConfirmDialog"
+            data-edit-id="113"
+          >
+            确认
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -213,6 +305,8 @@ export default {
           ? WebTool.adjustSize([false, false, true])
           : false,
       activeStepIndex: 0,
+      showAppConfig: false,
+      editingApps: [],
     };
   },
   watch: {
@@ -237,6 +331,41 @@ export default {
       }
       return ret;
     },
+    openAppItem(item) {
+      let appId = item.value;
+      window.open(`https://transweb.cn?id=${appId}`, "_blank");
+    },
+    handleEditingDialog() {
+      this.editingApps = JSON.parse(JSON.stringify(this.apps));
+      this.$nextTick(() => {
+        this.showAppConfig = true;
+      });
+    },
+    handleConfirmDialog() {
+      this.apps = JSON.parse(JSON.stringify(this.editingApps));
+      this.showAppConfig = false;
+    },
+    addItem(type) {
+      this.editingApps.push({
+        value: "",
+        label: "新应用",
+      });
+    },
+    resetToDefault() {
+      this.$confirm(`确认要恢复初始列表吗？`, "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(() => {
+          this.editingApps = JSON.parse(JSON.stringify(this.apps));
+          this.$message.success("已恢复默认设置");
+        })
+        .catch(() => {});
+    },
+    removeItem(index) {
+      this.editingApps.splice(index, 1);
+    },
     continueWorkflow() {
       if (Number(this.activeStepIndex) >= this.stepData.length - 1) {
         this.$message.warning("没有更多步骤了");
@@ -249,10 +378,13 @@ export default {
         if (dataId) {
           let nextNode = this.stepData[this.activeStepIndex + 1];
           if (nextNode) {
-            this.currentNodeUrl = WebTool.attachParams(nextNode.currentNodeUrl, {
-              inputItem: dataId,
-              auto: true
-            }); 
+            this.currentNodeUrl = WebTool.attachParams(
+              nextNode.currentNodeUrl,
+              {
+                inputItem: dataId,
+                auto: true,
+              }
+            );
           }
         }
       } else {
@@ -260,6 +392,10 @@ export default {
           "当前步骤没有结果可展示，请先在下方完成当前步骤的操作"
         );
       }
+    },
+    handleTitleChange(e) {
+      let elem = e.currentTarget;
+      this.title = elem.innerText;
     },
     resetWorkflow() {
       this.$confirm(
@@ -506,7 +642,7 @@ export default {
   margin-top: 15px;
 }
 
-.continue-btn:hover{
+.continue-btn:hover {
   transform: scale(1.08) !important;
   border-color: #a5b4fc !important;
   color: #a5b4fc !important;
