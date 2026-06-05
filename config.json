@@ -1,0 +1,32 @@
+{
+  "title": "行业认知工作流",
+  "apps": [
+    {
+      "value": "97de7ea5d065e96a6b71909f4768fac1",
+      "label": "研究报告"
+    },
+    {
+      "value": "dcd76a6c644295cdc29b33bdbe825017",
+      "label": "商业方案"
+    },
+    {
+      "value": "2d233c906f091e2f17385e4494fdd05f",
+      "label": "行业认知"
+    },
+    {
+      "value": "236d92571c458ed21469b9c4327be3fe",
+      "label": "长文章"
+    },
+    {
+      "value": "60116b5ffe98003395b70402748aeab6",
+      "label": "课程课件"
+    }
+  ],
+  "accountData": {
+    "workflow": [
+      "236d92571c458ed21469b9c4327be3fe",
+      "60116b5ffe98003395b70402748aeab6"
+    ],
+    "appId": "2d233c906f091e2f17385e4494fdd05f"
+  }
+}
