@@ -133,7 +133,11 @@ build.js 执行无报错，且 index.html 已更新。
 
 项目地址：https://github.com/liuwenjin/trans-workflow
 
-问题反馈：Issues 页面
+问题反馈：[Issues 页面](https://github.com/liuwenjin/trans-workflow/issues)
 
 邮箱：neilking@163.com
+
+微信:
+
+<img src="https://transweb.cn/assets/qrcode.png" style="width: 300px;" />
 
