@@ -7,36 +7,53 @@
             'tw-font-bold tw-text-gray-900 tw-whitespace-nowrap tw-m-0',
             flag ? 'tw-text-xl' : 'tw-text-2xl tw-w-custom-160',
           ]"
-          style="outline: none; line-height: 1.2;"
+          style="outline: none; line-height: 1.2"
           :contenteditable="true"
           @blur="handleTitleChange"
         >
           {{ title || "极简工作流" }}
         </h3>
-        <el-dropdown v-if="!flag" trigger="click" data-edit-id="39">
-          <el-button circle size="small" data-edit-id="40">
-            <el-icon data-edit-id="41">
-              <setting data-edit-id="42" />
-            </el-icon>
-          </el-button>
-          <template #dropdown>
-            <el-dropdown-menu data-edit-id="44">
-              <el-dropdown-item @click="exportWorkflow()" data-edit-id="46"
-                >导出工作流</el-dropdown-item
-              >
-              <el-dropdown-item @click="handleEditingDialog" data-edit-id="46"
-                >可选 Agent 列表</el-dropdown-item
-              >
-              <slot v-for="(item, index) in apps" :key="item.label">
-                <el-dropdown-item
-                  @click="openAppItem(item)"
-                  :divided="index === 0"
-                  >{{ item.label }}</el-dropdown-item
+        <span class="optionsArea">
+          <el-button
+            circle
+            class="tw-mr-2"
+            style="margin-top: -3px"
+            size="small"
+            title="新增可选 Agent"
+            @click="newAgentDialog()"
+            ><el-icon><plus /></el-icon
+          ></el-button>
+          <el-dropdown trigger="click" data-edit-id="39">
+            <el-button circle size="small" data-edit-id="40">
+              <el-icon data-edit-id="41">
+                <setting data-edit-id="42" />
+              </el-icon>
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu data-edit-id="44">
+                <el-dropdown-item @click="handleEditingDialog" data-edit-id="46"
+                  >修改 Agent 列表</el-dropdown-item
                 >
-              </slot>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
+                <slot v-for="(item, index) in apps" :key="item.label">
+                  <el-dropdown-item
+                    @click="openAppItem(item)"
+                    :divided="index === 0"
+                    >{{ item.label }}</el-dropdown-item
+                  >
+                </slot>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+          <el-button
+            circle
+            class="tw-ml-2"
+            style="margin-top: -3px"
+            size="small"
+            title="导出工作流文件"
+            @click="exportWorkflow()"
+            ><el-icon><download /></el-icon
+          ></el-button>
+        </span>
       </div>
       <div
         :class="[
@@ -119,40 +136,10 @@
             </el-select>
           </div>
         </div>
-
-        <div
-          :class="['tw-flex-shrink-0 tw-flex', flag ? 'tw-justify-end' : '']"
-          style="position: absolute; z-index: 1000; right: 0px; bottom: -55px"
-        >
-          <el-button
-            circle
-            @click="resetWorkflow()"
-            class="tw-shadow-sm reset-btn"
-          >
-            <el-icon>
-              <refresh-right />
-            </el-icon>
-          </el-button>
-          <slot
-            v-if="
-              stepData[activeStepIndex] && stepData[activeStepIndex].resultUrl
-            "
-          >
-            <el-button
-              circle
-              @click="continueWorkflow()"
-              class="tw-shadow-sm continue-btn tw-mt-2"
-            >
-              <el-icon>
-                <el-icon><video-play /></el-icon>
-              </el-icon>
-            </el-button>
-          </slot>
-        </div>
       </div>
       <div
         v-if="accountData.appId"
-        class="tw-mt-6 tw-relative tw-w-full tw-bg-white tw-p-6 tw-rounded-xl tw-shadow-sm tw-border tw-border-slate-200"
+        class="tw-mt-6 tw-relative tw-pr-12 tw-w-full tw-bg-white tw-p-6 tw-rounded-xl tw-shadow-sm tw-border tw-border-slate-200"
       >
         <el-steps
           class="tw-w-full tw-relative"
@@ -173,6 +160,39 @@
             :title="getLabel(wf.appId).slice(0, 5)"
           ></el-step>
         </el-steps>
+        <div
+          class="optionsBtnArea tw-flex-shrink-0 tw-flex tw-flex-col tw-items-center"
+        >
+          <el-button
+            circle
+            @click="resetWorkflow()"
+            class="tw-shadow-sm reset-btn tw-mt-4"
+          >
+            <el-icon>
+              <refresh-right />
+            </el-icon>
+          </el-button>
+          <span
+            class="tw-shadow-sm tw-mt-2"
+            v-if="
+              true ||
+              (stepData[activeStepIndex] && stepData[activeStepIndex].resultUrl)
+            "
+          >
+            <el-button
+              :disabled="
+                !(stepData[activeStepIndex] && stepData[activeStepIndex].resultUrl)
+              "
+              class="continue-btn"
+              circle
+              @click="continueWorkflow()"
+            >
+              <el-icon>
+                <el-icon><caret-right /></el-icon>
+              </el-icon>
+            </el-button>
+          </span>
+        </div>
       </div>
     </div>
 
@@ -196,7 +216,7 @@
       <el-empty description="请在上方输入 Agent ID 以加载工作流" />
     </div>
 
-    <el-dialog v-model="showAppConfig" title="可选 Agent 列表" width="450px">
+    <el-dialog v-model="showAppConfig" title="可选 Agent 列表" width="400px">
       <div class="tw-flex tw-justify-between tw-mb-4" data-edit-id="64">
         <el-button
           type="primary"
@@ -215,7 +235,7 @@
         >
       </div>
       <el-table :data="editingApps" border size="small" data-edit-id="66">
-        <el-table-column label="Agent 名称" data-edit-id="67">
+        <el-table-column label="Agent 名称" width="80px" data-edit-id="67">
           <template #default="scope">
             <el-input
               v-model="scope.row.label"
@@ -320,6 +340,64 @@ export default {
     },
   },
   methods: {
+    newAgentDialog() {
+      let app = {
+        className: "ElementVueItem",
+        task: {
+          template: `<div class='tw-w-full tw-h-full'>
+                  <iframe class='tw-w-full tw-h-full' src='https://agent.transweb.cn?headerHidden=true'></iframe>
+                </div>`,
+        },
+      };
+      webCpu.renderCardDialog(
+        document.body,
+        app,
+        {
+          title: "新增可用 Agent",
+          titleStyle: {
+            background: "var(--el-color-primary-light-9)",
+            color: "var(--el-color-primary)",
+          },
+          closeType: "back",
+          menu: [
+            {
+              label: "确认添加",
+              action: () => {
+                let iframe = app.task.container.querySelector("iframe");
+                if (iframe) {
+                  let url = iframe.contentWindow.location.href;
+                  let params = WebTool.urlQuery(url);
+                  if (params.id) {
+                    this.apps.push({
+                      value: params.id,
+                      label: (iframe.contentDocument.title || params.id).slice(
+                        0,
+                        5
+                      ),
+                    });
+                    this.$message.success("已添加 Agent: " + params.id);
+                    webCpu.CardItem.dismissMask(document.body);
+                  } else {
+                    this.$message.error(
+                      "未获取到有效的 Agent ID，请确认后重试"
+                    );
+                  }
+                } else {
+                  this.$message.error("未找到内嵌的 Agent 页面，请确认后重试");
+                }
+              },
+            },
+          ],
+        },
+        {
+          width: "100%",
+          maxWidth: "900px",
+          height: this.flag ? "100%" : "90%",
+          borderRadius: "12px",
+          boxShadow: "0 4px 12px rgba(99, 102, 241, 0.08)",
+        }
+      );
+    },
     getStepStuts(index) {
       let ret = "";
       if (this.stepData[index].resultUrl) {
@@ -634,12 +712,31 @@ export default {
     0 4px 16px rgba(99, 102, 241, 0.1) !important;
 }
 
+.optionsBtnArea {
+  position: absolute;
+  z-index: 1000;
+  right: 0px;
+  height: 108px;
+  width: 50px;
+  text-align: center;
+  top: 0px;
+  background: rgba(225, 225, 225, 0.4) !important;
+  border-radius: 0 12px 12px 0 !important;
+}
+
 .reset-btn,
 .continue-btn {
   transition: transform 0.2s ease, box-shadow 0.2s ease !important;
   border-color: #e2e8f0 !important;
   color: #64748b !important;
-  margin-top: 15px;
+}
+
+.el-button[disabled] {
+  border-color: #f1f5f9 !important;
+  color: #cbd5e1 !important;
+  background: #f8fafc !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
 }
 
 .continue-btn:hover {
