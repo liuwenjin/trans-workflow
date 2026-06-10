@@ -423,7 +423,7 @@ export default {
       this.apps = JSON.parse(JSON.stringify(this.editingApps));
       this.showAppConfig = false;
     },
-    addItem(type) {
+    addItem() {
       this.editingApps.push({
         value: "",
         label: "新应用",
@@ -454,7 +454,7 @@ export default {
         let params = WebTool.urlQuery(currentNode.resultUrl);
         let dataId = params.dataId;
         if (dataId) {
-          let nextNode = this.stepData[this.activeStepIndex + 1];
+          let nextNode = this.stepData[Number(this.activeStepIndex) + 1];
           if (nextNode) {
             this.currentNodeUrl = WebTool.attachParams(
               nextNode.currentNodeUrl,
@@ -585,7 +585,7 @@ export default {
           console.log("当前 URL: ", currentUrl, "stepIndex: ", stepIndex);
 
           if (stepIndex > 0 && stepIndex < this.stepData.length) {
-            this.activeStepIndex = String(stepIndex);
+            this.activeStepIndex = stepIndex;
             let node = this.stepData[stepIndex - 1] || {};
             let url = webCpu.documentPrefix;
             if (inputItem) {
