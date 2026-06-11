@@ -122,6 +122,13 @@
       }
     }
 
+    html,
+    body {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
     .animate-glow-pulse {
       animation: float-glow 1.8s infinite;
     }
@@ -523,6 +530,38 @@
     </div>
   </section>
 
+  <div class="tw-fixed tw-right-6 tw-bottom-6 tw-flex tw-flex-col tw-gap-4 tw-z-50">
+    <button id="scrollToTopBtn"
+      class="tw-w-12 tw-h-12 tw-bg-gray-800 tw-text-white tw-rounded-full tw-shadow-lg hover:tw-bg-gray-900 hover:tw-scale-105 tw-transition-all tw-duration-300 tw-flex tw-items-center tw-justify-center focus:tw-outline-none tw-opacity-0 tw-pointer-events-none">
+      <svg class="tw-w-6 tw-h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+      </svg>
+    </button>
+    <div class="tw-relative tw-group">
+      <div
+        class="tw-absolute tw-right-full tw-bottom-0 tw-mr-4 tw-w-32 tw-h-32 tw-bg-white tw-border tw-border-gray-200 tw-rounded-lg tw-shadow-xl tw-opacity-0 tw-invisible group-hover:tw-opacity-100 group-hover:tw-visible tw-transition-all tw-duration-300 tw-flex tw-items-center tw-justify-center">
+        <img src="https://transweb.cn/assets/qrcode.png" alt="微信二维码" class="tw-w-28 tw-h-28 tw-object-cover tw-rounded">
+        <div
+          class="tw-absolute tw-right-[-6px] tw-bottom-4 tw-w-3 tw-h-3 tw-bg-white tw-border-r tw-border-b tw-border-gray-200 tw-transform tw--rotate-45">
+        </div>
+      </div>
+      <button
+        class="tw-w-12 tw-h-12 tw-bg-green-500 tw-text-white tw-rounded-full tw-shadow-lg hover:tw-bg-green-600 hover:tw-scale-105 tw-transition-all tw-duration-200 tw-flex tw-items-center tw-justify-center focus:tw-outline-none">
+        <svg class="tw-w-10 tw-h-10" fill="currentColor" viewBox="0 0 22 22">
+          <path
+            d="M8.5 13.5c-.8 0-1.5-.7-1.5-1.5s.7-1.5 1.5-1.5 1.5.7 1.5 1.5-.7 1.5-1.5 1.5zm6.5 0c-.8 0-1.5-.7-1.5-1.5s.7-1.5 1.5-1.5 1.5.7 1.5 1.5-.7 1.5-1.5 1.5zm3.5-3.5c0-3.3-3.1-6-7-6s-7 2.7-7 6c0 1.8.9 3.5 2.4 4.6l-.8 2.4 2.8-1.4c.8.3 1.7.4 2.6.4 3.9 0 7-2.7 7-6z" />
+        </svg>
+      </button>
+    </div>
+    <button style="display: none;" onclick="openAIAssistant()"
+      class="tw-w-12 tw-h-12 tw-bg-blue-600 tw-text-white tw-rounded-full tw-shadow-lg hover:tw-bg-blue-700 hover:tw-scale-105 tw-transition-all tw-duration-200 tw-flex tw-items-center tw-justify-center focus:tw-outline-none">
+      <svg class="tw-w-6 tw-h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+      </svg>
+    </button>
+  </div>
+
   <script>
     const downloadWorkflowFile = async (
       url = 'https://transweb.cn/workflow/index.html',
@@ -556,57 +595,91 @@
       }
     };
 
-    (function () {
-      // 移动端汉堡菜单切换
-      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-      const mobileNavPanel = document.getElementById('mobileNavPanel');
-      if (mobileMenuBtn && mobileNavPanel) {
-        mobileMenuBtn.addEventListener('click', () => {
-          mobileNavPanel.classList.toggle('tw-hidden');
-        });
-      }
 
-      // MacBook 外壳缩放适配（保证移动端不溢出）
-      const wrapper = document.getElementById('exampleWorkflow');
-      const scaler = document.getElementById('exampleWorkflowScaler');
-      const baseWidth = 550; // 最小安全宽度
-      function handleResize() {
-        if (!wrapper || !scaler) return;
-        const currentWidth = wrapper.getBoundingClientRect().width - 32;
-        if (currentWidth < baseWidth) {
-          const scale = currentWidth / baseWidth;
-          scaler.style.transform = `scale(${scale})`;
-          scaler.style.marginBottom = `-${baseWidth * (1 - scale)}px`;
-        } else {
-          scaler.style.transform = 'none';
-          scaler.style.marginBottom = '0px';
-        }
-      }
-      window.addEventListener('resize', handleResize);
-      window.addEventListener('DOMContentLoaded', handleResize);
-      setTimeout(handleResize, 150);
+    // 获取回到顶部按钮
+    const scrollToTopBtn = document.getElementById('scrollToTopBtn');
 
-      // Self Hosted 按钮跳转至下载/部署页
-      const selfHostedBtn = document.getElementById('selfHostedBtn');
-      if (selfHostedBtn) {
-        selfHostedBtn.addEventListener('click', () => {
-          window.open('https://transweb.cn/workflow/index.html', '_blank');
-        });
-      }
+    // 1. 监听整个窗口的滚动事件
+    window.addEventListener('scroll', () => {
+      // 兼容写法：获取当前页面的滚动高度
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
 
-      // 平滑滚动，让锚点跳转更自然 (可选)
-      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-          const hash = this.getAttribute('href');
-          if (hash === "#" || hash === "") return;
-          const target = document.querySelector(hash);
-          if (target) {
-            e.preventDefault();
-            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-        });
+      if (scrollTop > 300) {
+        // 页面向下滚动超过 300px 时显示按钮
+        scrollToTopBtn.classList.remove('tw-opacity-0', 'tw-pointer-events-none');
+        scrollToTopBtn.classList.add('tw-opacity-100', 'tw-pointer-events-auto');
+      } else {
+        // 否则隐藏按钮
+        scrollToTopBtn.classList.add('tw-opacity-0', 'tw-pointer-events-none');
+        scrollToTopBtn.classList.remove('tw-opacity-100', 'tw-pointer-events-auto');
+      }
+    });
+
+    // 2. 点击回到顶部（直接让窗口滚动）
+    scrollToTopBtn.addEventListener('click', () => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth' // 平滑滚动效果
       });
-    })();
+    });
+
+
+    let openAIAssistant = function () {
+
+
+    }
+
+
+    // 移动端汉堡菜单切换
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileNavPanel = document.getElementById('mobileNavPanel');
+    if (mobileMenuBtn && mobileNavPanel) {
+      mobileMenuBtn.addEventListener('click', () => {
+        mobileNavPanel.classList.toggle('tw-hidden');
+      });
+    }
+
+    // MacBook 外壳缩放适配（保证移动端不溢出）
+    const wrapper = document.getElementById('exampleWorkflow');
+    const scaler = document.getElementById('exampleWorkflowScaler');
+    const baseWidth = 550; // 最小安全宽度
+    function handleResize() {
+      if (!wrapper || !scaler) return;
+      const currentWidth = wrapper.getBoundingClientRect().width - 32;
+      if (currentWidth < baseWidth) {
+        const scale = currentWidth / baseWidth;
+        scaler.style.transform = `scale(${scale})`;
+        scaler.style.marginBottom = `-${baseWidth * (1 - scale)}px`;
+      } else {
+        scaler.style.transform = 'none';
+        scaler.style.marginBottom = '0px';
+      }
+    }
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('DOMContentLoaded', handleResize);
+    setTimeout(handleResize, 150);
+
+    // Self Hosted 按钮跳转至下载/部署页
+    const selfHostedBtn = document.getElementById('selfHostedBtn');
+    if (selfHostedBtn) {
+      selfHostedBtn.addEventListener('click', () => {
+        window.open('https://transweb.cn/workflow/index.html', '_blank');
+      });
+    }
+
+    // 平滑滚动，让锚点跳转更自然 (可选)
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        const hash = this.getAttribute('href');
+        if (hash === "#" || hash === "") return;
+        const target = document.querySelector(hash);
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+
   </script>
 </body>
 
