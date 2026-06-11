@@ -5,8 +5,83 @@
   <meta charset="utf-8">
   <meta name="viewport"
     content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=yes, viewport-fit=cover">
-  <title>Trans-Workflow · 开源 Agent 工作流引擎</title>
-  <!-- Tailwind CSS + 响应式增强 -->
+  <title>Trans-Workflow | 轻量级 Agent 工作流编排</title>
+  <meta name="description"
+    content="Trans-Workflow 是一款革命性的开源单文件 Agent 工作流编排工具。一个纯 HTML 文件即包含引擎与可视化编辑器，免 Docker、零依赖、永久免费、支持 100% 本地自托管，是 dify、langflow 和 n8n 的轻量级私有化替代方案。">
+  <meta name="keywords" content="Agent工作流, 智能体编排, 开源AI工作流, 单文件应用, 自托管AI, n8n替代, dify轻量版, Trans-Workflow, 零代码AI">
+  <meta name="author" content="Liu Wenjin">
+  <link rel="canonical" href="https://transweb.cn/workflow/index.html">
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://transweb.cn/workflow/index.html">
+  <meta property="og:title" content="Trans-Workflow | 轻量级 Agent 工作流编排">
+  <meta property="og:description" content="告别复杂的服务器运维！一个 HTML 文件即刻双击运行可视化 Agent 编排，支持节点级回溯与绝对数据隐私。">
+  <meta property="og:image" content="https://transweb.cn/assets/logo.png">
+  <meta property="og:site_name" content="TransWeb">
+  <meta property="og:locale" content="zh_CN">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Trans-Workflow | 单文件 Agent 可视化编排工具">
+  <meta name="twitter:description" content="免 Docker、零依赖、100%本地运行的轻量级 AI 工作流协作系统。">
+  <meta name="twitter:image" content="https://transweb.cn/assets/logo.png">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Trans-Workflow",
+    "operatingSystem": "Platform-Independent (Browser-based)",
+    "applicationCategory": "DeveloperApplication",
+    "browserRequirements": "Requires HTML5 compatible browser.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "CNY"
+    },
+    "description": "一个 HTML 文件，可视化编排构建智能体工作流，免费构建免费导出；无需信用卡，无节点限制，私有化即刻运行。",
+    "softwareVersion": "1.0.0",
+    "downloadUrl": "https://transweb.cn/workflow/index.html",
+    "applicationSubCategory": "AI Agent Workflow Builder",
+    "license": "https://github.com/liuwenjin/trans-workflow",
+    "author": {
+      "@type": "Person",
+      "name": "Liu Wenjin"
+    }
+  }
+  </script>
+  <!-- GA -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-K117F271PB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-K117F271PB');
+
+    (function () {
+      function track(e, p = {}) { gtag('event', e, { page_title: document.title, page_location: location.href, ...p }); }
+      window.$track = track;
+      window.addEventListener('load', () => track('page_view_custom'));
+      document.addEventListener('click', function (e) {
+        const t = e.target.closest('.agent-card');
+        if (t) track('module_click', { module_name: t.dataset.name || t.innerText || 'unknown' });
+      });
+      ['click', 'mousemove', 'keydown', 'touchstart'].forEach(evt => {
+        window.addEventListener(evt, function handler() {
+          track('interaction', { type: evt });
+          window.removeEventListener(evt, handler);
+        });
+      });
+      setTimeout(() => track('stay_10s'), 10000);
+      setTimeout(() => track('stay_30s'), 30000);
+      window.addEventListener('beforeunload', () => track('page_exit'));
+      const params = new URLSearchParams(location.search);
+      const utm = {};
+      ['utm_source', 'utm_medium', 'utm_campaign'].forEach(k => {
+        const v = params.get(k); if (v) utm[k] = v;
+      });
+      if (utm.utm_source || utm.utm_campaign) track('traffic_source', utm);
+    })();
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>tailwind = { config: { prefix: 'tw-' } }</script>
   <style>
@@ -158,10 +233,12 @@
             class="tw-text-sm tw-font-medium tw-text-gray-600 hover:tw-text-green-600 tw-transition">文档</a>
           <a href="https://github.com/liuwenjin/trans-workflow" target="_blank"
             class="tw-text-sm tw-font-medium tw-text-gray-600 hover:tw-text-green-600 tw-transition">GitHub</a>
-          <button onclick="downloadWorkflowFile()"
-            class="tw-bg-black hover:tw-bg-gray-800 tw-text-white tw-px-5 tw-py-2 tw-rounded-full tw-text-sm tw-font-semibold tw-shadow-md tw-transition-all">
-            ⭐ Self Hosted
-          </button>
+          <a href="https://transweb.cn/workflow/index.html" target="_blank">
+            <button
+              class="tw-bg-black hover:tw-bg-gray-800 tw-text-white tw-px-5 tw-py-2 tw-rounded-full tw-text-sm tw-font-semibold tw-shadow-md tw-transition-all">
+              ⭐ 立即使用
+            </button>
+          </a>
         </div>
 
         <!-- 移动端简版按钮 + 汉堡菜单 -->
@@ -439,7 +516,7 @@
           </a>
           <button onclick="downloadWorkflowFile()"
             class="tw-bg-white tw-border-2 tw-border-gray-300 hover:tw-border-green-500 tw-text-gray-700 tw-px-6 sm:tw-px-10 tw-py-3 sm:tw-py-4 tw-rounded-full tw-text-base sm:tw-text-lg tw-flex tw-items-center tw-gap-2 transition-all">
-             🖥️ Self Hosted <span class="tw-text-xs tw-bg-gray-100 tw-px-2 tw-py-0.5 tw-rounded-full">私有部署</span>
+            🖥️ Self Hosted <span class="tw-text-xs tw-bg-gray-100 tw-px-2 tw-py-0.5 tw-rounded-full">私有部署</span>
           </button>
         </div>
       </div>

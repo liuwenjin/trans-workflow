@@ -8,12 +8,12 @@
             flag ? 'tw-text-xl' : 'tw-text-2xl tw-w-custom-160',
           ]"
           style="outline: none; line-height: 1.2"
-          :contenteditable="true"
+          :contenteditable="!isViewer"
           @blur="handleTitleChange"
         >
           {{ title || "极简工作流" }}
         </h3>
-        <span class="optionsArea">
+        <span class="optionsArea" v-if="!isViewer">
           <el-button
             circle
             class="tw-mr-2"
@@ -44,18 +44,41 @@
               </el-dropdown-menu>
             </template>
           </el-dropdown>
+          <el-dropdown trigger="click">
+            <el-button circle class="tw-ml-2" size="small"
+              ><el-icon><download /></el-icon
+            ></el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item
+                  title="导出工作流文件"
+                  @click="exportWorkflow()"
+                  >导出工作流</el-dropdown-item
+                >
+                <el-dropdown-item
+                  title="导出执行记录"
+                  @click="exportWorkflow('record')"
+                  >导出执行记录</el-dropdown-item
+                >
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </span>
+        <span v-else>
           <el-button
             circle
             class="tw-ml-2"
             style="margin-top: -3px"
             size="small"
-            title="导出工作流文件"
-            @click="exportWorkflow()"
-            ><el-icon><download /></el-icon
+            title="编辑工作流"
+            @click="switchEditMode()"
+            ><el-icon
+              ><el-icon><edit /></el-icon></el-icon
           ></el-button>
         </span>
       </div>
       <div
+        v-if="!isViewer"
         :class="[
           'tw-w-full tw-mt-4 tw-relative tw-flex tw-gap-4',
           flag ? 'tw-flex-col tw-items-stretch' : 'tw-flex-row tw-items-center',
@@ -166,6 +189,7 @@
           <el-button
             circle
             @click="resetWorkflow()"
+            :disabled="isViewer"
             class="tw-shadow-sm reset-btn tw-mt-4"
           >
             <el-icon>
@@ -181,7 +205,11 @@
           >
             <el-button
               :disabled="
-                !(stepData[activeStepIndex] && stepData[activeStepIndex].resultUrl)
+                isViewer ||
+                !(
+                  stepData[activeStepIndex] &&
+                  stepData[activeStepIndex].resultUrl
+                )
               "
               class="continue-btn"
               circle
@@ -318,6 +346,7 @@ export default {
         ],
         appId: "2d233c906f091e2f17385e4494fdd05f",
       },
+      isViewer: false,
       stepData: [],
       currentNodeUrl: "",
       flag:
@@ -326,6 +355,7 @@ export default {
           : false,
       activeStepIndex: 0,
       showAppConfig: false,
+      agentResults: [],
       editingApps: [],
     };
   },
@@ -397,6 +427,9 @@ export default {
           boxShadow: "0 4px 12px rgba(99, 102, 241, 0.08)",
         }
       );
+    },
+    switchEditMode() {
+      this.isViewer = false;
     },
     getStepStuts(index) {
       let ret = "";
@@ -474,6 +507,7 @@ export default {
     handleTitleChange(e) {
       let elem = e.currentTarget;
       this.title = elem.innerText;
+      document.title = elem.innerText;
     },
     resetWorkflow() {
       this.$confirm(
@@ -495,6 +529,7 @@ export default {
     initStepData() {
       let arr = this.accountData.workflow || [];
       this.stepData = [];
+      this.agentResults = this.agentResults || [];
       let temp = [this.accountData.appId];
       for (let i = 0; i < arr.length; i++) {
         let item = arr[i];
@@ -503,7 +538,11 @@ export default {
           this.stepData.push({
             appId: item,
             currentNodeUrl: this.getUrl(item),
-            resultUrl: "",
+            resultUrl: this.isViewer
+              ? this.agentResults[i + 1]
+                ? this.agentResults[i + 1].resultUrl
+                : ""
+              : "",
           });
         }
       }
@@ -511,20 +550,47 @@ export default {
       this.stepData.unshift({
         appId: this.accountData.appId,
         currentNodeUrl: this.getUrl(),
-        resultUrl: "",
+        resultUrl: this.isViewer
+          ? this.agentResults[0]
+            ? this.agentResults[0].resultUrl
+            : ""
+          : "",
       });
-      this.currentNodeUrl = this.getUrl();
+      this.currentNodeUrl = this.isViewer
+        ? this.stepData[0].resultUrl || this.getUrl()
+        : this.getUrl();
     },
-    exportWorkflow() {
+    exportWorkflow(type) {
       let config = {
         title: this.title,
         accountData: this.accountData,
         apps: this.apps,
       };
-      WebTool.exportWorkflow(config, (name) => {
-        // 处理导出的 HTML 文本
-        this.$message.success("工作流已导出，文件名: " + name);
-      });
+      if (type === "record") {
+        config.isViewer = true;
+        config.agentResults = this.stepData.map((item) => {
+          return {
+            appId: item.appId,
+            resultUrl: item.resultUrl,
+          };
+        });
+      } else {
+        config.isViewer = false;
+        config.agentResults = [];
+      }
+      let time = new Date()
+        .toLocaleString()
+        .replace(/\//g, "-")
+        .replace(/:\s*/g, "-");
+      let tName = `执行记录_${time}`;
+      WebTool.exportWorkflow(
+        config,
+        (name) => {
+          // 处理导出的 HTML 文本
+          this.$message.success("工作流已导出，文件名: " + name);
+        },
+        config.isViewer ? tName : ""
+      );
     },
     refreshCurrentWorkflow(index, flag) {
       let url = "";
@@ -584,7 +650,7 @@ export default {
 
           console.log("当前 URL: ", currentUrl, "stepIndex: ", stepIndex);
 
-          if (stepIndex > 0 && stepIndex < this.stepData.length) {
+          if (stepIndex < this.stepData.length) {
             this.activeStepIndex = stepIndex;
             let node = this.stepData[stepIndex - 1] || {};
             let url = webCpu.documentPrefix;
