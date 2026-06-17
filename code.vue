@@ -1,30 +1,49 @@
 <template>
-  <div id="rootContainerItem" class="tw-relative tw-bg-slate-50 tw-px-5">
+  <div id="rootContainerItem" class="tw-relative tw-bg-page-gradient tw-px-5">
     <div class="tw-w-full tw-max-w-5xl tw-mx-auto tw-pt-8 tw-relative">
-      <div class="tw-w-full tw-flex tw-justify-between">
-        <h3
-          :class="[
-            'tw-font-bold tw-text-gray-900 tw-whitespace-nowrap tw-m-0',
-            flag ? 'tw-text-xl' : 'tw-text-2xl tw-w-custom-160',
-          ]"
-          style="outline: none; line-height: 1.2"
-          :contenteditable="!isViewer"
-          @blur="handleTitleChange"
+      <div class="tw-w-full tw-flex tw-justify-between tw-items-center">
+        <div class="tw-flex tw-items-center tw-gap-3">
+          <div class="tw-flex tw-items-center tw-justify-center tw-w-9 tw-h-9">
+            <img
+              class="tw-w-9 tw-h-9"
+              src="https://transweb.cn/assets/logo.png"
+            />
+          </div>
+          <h3
+            :class="[
+              'tw-font-bold tw-text-gray-900 tw-whitespace-nowrap tw-m-0',
+              flag ? 'tw-text-xl' : 'tw-text-2xl tw-w-custom-160',
+            ]"
+            style="outline: none; line-height: 1.2"
+            :contenteditable="!isViewer"
+            @blur="handleTitleChange"
+          >
+            {{ title || "极简工作流" }}
+          </h3>
+        </div>
+        <span
+          class="optionsArea tw-flex tw-items-center tw-gap-1"
+          v-if="!isViewer"
         >
-          {{ title || "极简工作流" }}
-        </h3>
-        <span class="optionsArea" v-if="!isViewer">
           <el-button
             circle
-            class="tw-mr-2"
+            class="tw-mr-1 header-action-btn"
             style="margin-top: -3px"
             size="small"
             title="新增可选 Agent"
             @click="newAgentDialog()"
-            ><el-icon><plus /></el-icon
-          ></el-button>
+          >
+            <el-icon>
+              <plus />
+            </el-icon>
+          </el-button>
           <el-dropdown trigger="click" data-edit-id="39">
-            <el-button circle size="small" data-edit-id="40">
+            <el-button
+              circle
+              size="small"
+              class="header-action-btn"
+              data-edit-id="40"
+            >
               <el-icon data-edit-id="41">
                 <setting data-edit-id="42" />
               </el-icon>
@@ -45,9 +64,11 @@
             </template>
           </el-dropdown>
           <el-dropdown trigger="click">
-            <el-button circle class="tw-ml-2" size="small"
-              ><el-icon><download /></el-icon
-            ></el-button>
+            <el-button circle class="tw-ml-1 header-action-btn" size="small">
+              <el-icon>
+                <download />
+              </el-icon>
+            </el-button>
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item
@@ -67,20 +88,25 @@
         <span v-else>
           <el-button
             circle
-            class="tw-ml-2"
+            class="tw-ml-2 header-action-btn"
             style="margin-top: -3px"
             size="small"
             title="编辑工作流"
             @click="switchEditMode()"
-            ><el-icon
-              ><el-icon><edit /></el-icon></el-icon
-          ></el-button>
+          >
+            <el-icon>
+              <el-icon>
+                <edit />
+              </el-icon>
+            </el-icon>
+          </el-button>
         </span>
       </div>
+
       <div
         v-if="!isViewer"
         :class="[
-          'tw-w-full tw-mt-4 tw-relative tw-flex tw-gap-4',
+          'tw-w-full tw-mt-5 tw-relative tw-flex tw-gap-4',
           flag ? 'tw-flex-col tw-items-stretch' : 'tw-flex-row tw-items-center',
         ]"
       >
@@ -89,7 +115,7 @@
             'tw-flex tw-w-full',
             flag
               ? 'tw-flex-col tw-gap-3 tw-bg-transparent tw-border-none tw-shadow-none'
-              : 'tw-flex-row tw-items-stretch tw-bg-white tw-rounded-2xl tw-border tw-border-slate-200 tw-shadow-md configuration-wrapper tw-flex-1',
+              : 'tw-flex-row tw-items-stretch tw-bg-white tw-rounded-2xl tw-border tw-border-indigo-50 tw-shadow-card configuration-wrapper tw-flex-1',
           ]"
         >
           <div
@@ -97,13 +123,12 @@
               'tw-flex tw-items-center tw-gap-2',
               flag
                 ? 'tw-w-full'
-                : 'tw-px-2 tw-py-1 tw-flex-initial tw-w-custom',
+                : 'tw-px-3 tw-py-1 tw-flex-initial tw-w-custom',
             ]"
           >
-            <i
-              class="bi bi-robot tw-text-indigo-400 tw-text-base tw-ml-1 tw-flex-shrink-0"
-              v-if="!flag"
-            ></i>
+            <div class="tw-ml-1" v-if="!flag">
+              <i class="bi bi-rocket-takeoff tw-bot-icon-inner"></i>
+            </div>
             <el-select
               v-model="accountData.appId"
               allow-create
@@ -130,11 +155,11 @@
           <div
             :class="[
               'tw-flex tw-items-center tw-gap-2',
-              flag ? 'tw-w-full' : 'tw-px-2 tw-py-1 tw-flex-1',
+              flag ? 'tw-w-full' : 'tw-px-3 tw-py-1 tw-flex-1',
             ]"
           >
             <i
-              class="bi bi-arrow-right tw-text-purple-400 tw-text-base tw-ml-1 tw-flex-shrink-0"
+              class="bi bi-arrow-right tw-text-teal-500 tw-text-base tw-ml-1 tw-flex-shrink-0 tw-drop-shadow-glow"
               v-if="!flag"
             ></i>
             <el-select
@@ -160,12 +185,13 @@
           </div>
         </div>
       </div>
+
       <div
         v-if="accountData.appId"
-        class="tw-mt-6 tw-relative tw-pr-12 tw-w-full tw-bg-white tw-p-6 tw-rounded-xl tw-shadow-sm tw-border tw-border-slate-200"
+        class="tw-mt-6 tw-relative tw-pr-12 tw-w-full tw-bg-white tw-p-6 tw-rounded-2xl tw-shadow-card tw-border tw-border-indigo-50 steps-panel"
       >
         <el-steps
-          class="tw-w-full tw-relative"
+          class="tw-w-full tw-relative custom-cyber-steps"
           :active="activeStepIndex"
           finish-status="success"
           align-center
@@ -216,7 +242,9 @@
               @click="continueWorkflow()"
             >
               <el-icon>
-                <el-icon><caret-right /></el-icon>
+                <el-icon>
+                  <caret-right />
+                </el-icon>
               </el-icon>
             </el-button>
           </span>
@@ -226,7 +254,7 @@
 
     <div
       v-if="accountData.appId"
-      class="tw-bg-white tw-max-w-5xl tw-mx-auto tw-h-viewer tw-rounded-xl tw-shadow-lg tw-overflow-hidden tw-border tw-border-slate-200 tw-mt-6"
+      class="tw-bg-white tw-max-w-5xl tw-mx-auto tw-h-viewer tw-rounded-2xl tw-shadow-iframe tw-overflow-hidden tw-border tw-border-indigo-50 tw-mt-6 iframe-glow"
     >
       <iframe
         ref="workflowFrame"
@@ -241,12 +269,25 @@
 
     <div
       v-else
-      class="tw-py-10 tw-px-5 tw-max-w-5xl tw-mx-auto tw-bg-white tw-rounded-xl tw-border-2 tw-border-dashed tw-border-slate-200 tw-mt-6"
+      class="tw-py-16 tw-px-5 tw-max-w-5xl tw-mx-auto tw-bg-white tw-rounded-2xl tw-border-2 tw-border-dashed tw-border-indigo-100 tw-mt-6 empty-panel"
     >
-      <el-empty description="请在上方输入 Agent ID 以加载工作流" />
+      <el-empty description="请在上方输入 Agent ID 以加载工作流">
+        <template #image>
+          <div
+            class="tw-flex tw-items-center tw-justify-center tw-w-20 tw-h-20 tw-rounded-full tw-bg-indigo-50 tw-mx-auto"
+          >
+            <i class="bi bi-diagram-3 tw-text-indigo-300 tw-text-4xl"></i>
+          </div>
+        </template>
+      </el-empty>
     </div>
 
-    <el-dialog v-model="showAppConfig" title="可选 Agent 列表" width="400px" destroy-on-close>
+    <el-dialog
+      v-model="showAppConfig"
+      title="可选 Agent 列表"
+      width="400px"
+      destroy-on-close
+    >
       <div class="tw-flex tw-justify-between tw-mb-4" data-edit-id="64">
         <el-button
           type="primary"
@@ -588,7 +629,6 @@ export default {
       WebTool.exportWorkflow(
         config,
         (name) => {
-          // 处理导出的 HTML 文本
           this.$message.success("工作流已导出，文件名: " + name);
         },
         config.isViewer ? tName : ""
@@ -628,7 +668,6 @@ export default {
       console.log("iframe DOM 节点: ", iframe);
       if (!iframe) return;
 
-      // 1. 核心业务逻辑抽取（修复了原代码 node 未定义的 Bug）
       const checkUrl = (currentUrl) => {
         try {
           if (!iframe.contentWindow) return;
@@ -673,30 +712,25 @@ export default {
             console.log("步骤数据: ", this.stepData);
           }
         } catch (e) {
-          // 跨域时会捕获到错误，安全退出
           console.warn("捕获异常: ", e);
         }
       };
 
       if (location.origin === webCpu.documentPrefix) {
         iframe.onload = () => {
-          // 每次 iframe 页面变化（硬加载），先执行一次检查
           checkUrl();
         };
       } else {
         let callback = function (event) {
-          // 校验数据格式
           if (event.data && event.data.type === "IFRAME_URL_CHANGE") {
             const latestIframeUrl = event.data.url;
 
             checkUrl(latestIframeUrl);
             console.log("获取到 iframe 最新的 URL:", latestIframeUrl);
-            // 在这里执行你需要的业务逻辑
           }
         };
         window.removeEventListener("message", callback);
         window.addEventListener("message", callback);
-        // 缓存 callback 引用，便于组件销毁时清理
         this._iframeMessageCallback = callback;
       }
     },
@@ -706,12 +740,10 @@ export default {
     this.initStepData();
   },
   beforeUnmount() {
-    // 组件销毁时移除全局事件监听，防止内存泄漏
     if (this._iframeMessageCallback) {
       window.removeEventListener("message", this._iframeMessageCallback);
       this._iframeMessageCallback = null;
     }
-    // 清理 iframe onload 引用
     const iframe = this.$refs.workflowFrame;
     if (iframe) {
       iframe.onload = null;
@@ -721,6 +753,27 @@ export default {
 </script>
 
 <style scoped>
+.tw-bg-page-gradient {
+  background: linear-gradient(160deg, #f8f9ff 0%, #f1f4fe 40%, #f5f3ff 100%);
+  min-height: 100vh;
+}
+
+.tw-bg-indigo-gradient {
+  background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
+}
+
+.tw-shadow-icon {
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.tw-shadow-card {
+  box-shadow: 0 2px 16px rgba(99, 102, 241, 0.07), 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.tw-shadow-iframe {
+  box-shadow: 0 8px 40px rgba(99, 102, 241, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
 .tw-w-custom-160 {
   width: 160px !important;
 }
@@ -743,8 +796,102 @@ export default {
   max-width: 900px !important;
 }
 
-.activeStepItem .el-step__title {
-  color: #4f46e5 !important;
+.header-action-btn {
+  border-color: #e0e7ff !important;
+  color: #6366f1 !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease !important;
+}
+
+.header-action-btn:hover {
+  border-color: #a5b4fc !important;
+  background: #eef2ff !important;
+  box-shadow: 0 0 0 3px rgba(165, 180, 252, 0.18) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* 3D Glossy Metallic AI Bot Head */
+.tw-ai-bot-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.4),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.6), 0 4px 10px rgba(20, 184, 166, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(45, 212, 191, 0.6);
+  position: relative;
+  overflow: hidden;
+}
+
+.tw-ai-bot-icon::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 60%
+  );
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+.tw-bot-icon-inner {
+  color: #2dd4bf;
+  font-size: 18px;
+  text-shadow: 0 0 8px #2dd4bf, 0 0 15px #5eead4;
+  z-index: 1;
+}
+
+.tw-drop-shadow-glow {
+  filter: drop-shadow(0 0 4px rgba(45, 212, 191, 0.8));
+}
+
+/* Input Fields with Soft Inner Shadows and Glow */
+.configuration-wrapper {
+  background: #ffffff;
+  border: 1px solid rgba(45, 212, 191, 0.3) !important;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.04),
+    0 0 15px rgba(45, 212, 191, 0.1) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 50px;
+}
+
+.configuration-wrapper:hover {
+  border-color: rgba(168, 85, 247, 0.5) !important;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.04),
+    0 0 20px rgba(168, 85, 247, 0.15) !important;
+}
+
+.configuration-wrapper:focus-within {
+  border-color: #a855f7 !important;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.04),
+    0 0 0 3px rgba(168, 85, 247, 0.2), 0 0 25px rgba(168, 85, 247, 0.25) !important;
+}
+
+/* Select Dropdown Tags Enhancement */
+:deep(.el-select__tags .el-tag) {
+  background: linear-gradient(135deg, #f0fdfa, #faf5ff) !important;
+  border: 1px solid rgba(45, 212, 191, 0.4) !important;
+  box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.9),
+    0 2px 5px rgba(168, 85, 247, 0.1) !important;
+  color: #1e293b !important;
+  border-radius: 8px !important;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+:deep(.el-select__tags .el-tag:hover) {
+  box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.9),
+    0 3px 8px rgba(168, 85, 247, 0.2) !important;
+  transform: translateY(-1px);
 }
 
 .custom-select-no-border :deep(.el-select__wrapper) {
@@ -755,42 +902,153 @@ export default {
 }
 
 .custom-select-no-border :deep(.el-select__wrapper:hover) {
-  background: rgba(248, 250, 252, 0.8) !important;
+  background: rgba(240, 253, 250, 0.5) !important;
   border-radius: 10px !important;
 }
 
 .mobile-select-bordered :deep(.el-select__wrapper) {
-  border: 1px solid #e2e8f0 !important;
+  border: 1px solid #ccfbf1 !important;
   border-radius: 12px !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02) !important;
   padding: 6px 10px !important;
-  transition: border-color 0.2s, box-shadow 0.2s !important;
+  transition: all 0.3s ease !important;
 }
 
 .mobile-select-bordered :deep(.el-select__wrapper:hover) {
-  border-color: #a5b4fc !important;
-  box-shadow: 0 0 0 3px rgba(165, 180, 252, 0.15) !important;
+  border-color: #5eead4 !important;
+  box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.2) !important;
 }
 
 .mobile-select-bordered :deep(.el-select__wrapper.is-focused) {
-  border-color: #818cf8 !important;
-  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2) !important;
+  border-color: #a855f7 !important;
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2) !important;
 }
 
-.configuration-wrapper {
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
-  min-height: 46px;
+.steps-panel {
+  background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%) !important;
 }
 
-.configuration-wrapper:hover {
+/* --- Cyber/Neon Timeline & Milestones --- */
+.custom-cyber-steps :deep(.el-step__line) {
+  background: linear-gradient(90deg, #14b8a6, #a855f7) !important;
+  height: 6px !important;
+  top: 13px !important;
+  border-radius: 3px !important;
+  box-shadow: 0 0 12px rgba(20, 184, 166, 0.5), 0 0 12px rgba(168, 85, 247, 0.5) !important;
+  opacity: 0.15;
+  transition: opacity 0.5s ease;
+}
+
+.custom-cyber-steps :deep(.el-step__head.is-success .el-step__line),
+.custom-cyber-steps :deep(.el-step__head.is-process .el-step__line) {
+  opacity: 1;
+}
+
+.custom-cyber-steps :deep(.el-step__icon) {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  background: #f8fafc !important;
+  border: 2px solid #cbd5e1 !important;
+  color: transparent !important;
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.custom-cyber-steps :deep(.el-step__icon-inner) {
+  display: none !important;
+}
+
+.custom-cyber-steps :deep(.el-step__head.is-success .el-step__icon) {
+  background: linear-gradient(135deg, #14b8a6, #0d9488) !important;
+  border: none !important;
+  box-shadow: 0 0 15px rgba(20, 184, 166, 0.6),
+    inset 0 2px 4px rgba(255, 255, 255, 0.4) !important;
+}
+
+.custom-cyber-steps :deep(.el-step__head.is-success .el-step__icon::before) {
+  content: "\F26A";
+  font-family: "bootstrap-icons";
+  color: #ffffff !important;
+  font-size: 18px;
+  font-weight: bold;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.custom-cyber-steps :deep(.el-step__head.is-process .el-step__icon) {
+  background: linear-gradient(135deg, #a855f7, #7e22ce) !important;
+  border: none !important;
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.7),
+    inset 0 2px 4px rgba(255, 255, 255, 0.4) !important;
+  animation: pulse-glow 2s infinite;
+}
+
+.custom-cyber-steps :deep(.el-step__head.is-process .el-step__icon::before) {
+  content: "\F4E1";
+  font-family: "bootstrap-icons";
+  color: #ffffff !important;
+  font-size: 16px;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes pulse-glow {
+  0% {
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.6),
+      inset 0 2px 4px rgba(255, 255, 255, 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 25px rgba(168, 85, 247, 0.9),
+      inset 0 2px 4px rgba(255, 255, 255, 0.4);
+  }
+
+  100% {
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.6),
+      inset 0 2px 4px rgba(255, 255, 255, 0.4);
+  }
+}
+
+.activeStepItem .el-step__title {
+  color: #9333ea !important;
+  font-weight: 700 !important;
+  text-shadow: 0 0 8px rgba(168, 85, 247, 0.3);
+}
+
+.iframe-glow {
+  position: relative;
+}
+
+.iframe-glow::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 18px;
+  background: linear-gradient(
+    135deg,
+    rgba(20, 184, 166, 0.15),
+    rgba(168, 85, 247, 0.1),
+    rgba(20, 184, 166, 0.08)
+  );
+  z-index: -1;
+  pointer-events: none;
+}
+
+.empty-panel {
+  background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%) !important;
+  transition: border-color 0.3s ease;
+}
+
+.empty-panel:hover {
   border-color: #c7d2fe !important;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.08) !important;
-}
-
-.configuration-wrapper:focus-within {
-  border-color: #818cf8 !important;
-  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.18),
-    0 4px 16px rgba(99, 102, 241, 0.1) !important;
 }
 
 .optionsBtnArea {
@@ -801,15 +1059,22 @@ export default {
   width: 50px;
   text-align: center;
   top: 0px;
-  background: rgba(225, 225, 225, 0.4) !important;
-  border-radius: 0 12px 12px 0 !important;
+  background: linear-gradient(
+    180deg,
+    rgba(240, 253, 250, 0.9) 0%,
+    rgba(250, 245, 255, 0.7) 100%
+  ) !important;
+  border-radius: 0 16px 16px 0 !important;
+  backdrop-filter: blur(8px);
+  border-left: 1px solid rgba(45, 212, 191, 0.2);
 }
 
 .reset-btn,
 .continue-btn {
   transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-  border-color: #e2e8f0 !important;
-  color: #64748b !important;
+  border-color: #ccfbf1 !important;
+  color: #14b8a6 !important;
+  background: rgba(255, 255, 255, 0.9) !important;
 }
 
 .el-button[disabled] {
@@ -821,16 +1086,20 @@ export default {
 }
 
 .continue-btn:hover {
-  transform: scale(1.08) !important;
-  border-color: #a5b4fc !important;
-  color: #a5b4fc !important;
-  box-shadow: 0 0 0 3px rgba(165, 180, 252, 0.15) !important;
+  transform: scale(1.1) !important;
+  border-color: #a855f7 !important;
+  color: #9333ea !important;
+  box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.2),
+    0 4px 12px rgba(168, 85, 247, 0.2) !important;
+  background: #faf5ff !important;
 }
 
 .reset-btn:hover {
-  transform: rotate(30deg) scale(1.08) !important;
-  border-color: #818cf8 !important;
-  color: #818cf8 !important;
-  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15) !important;
+  transform: rotate(30deg) scale(1.1) !important;
+  border-color: #5eead4 !important;
+  color: #0d9488 !important;
+  box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.2),
+    0 4px 12px rgba(20, 184, 166, 0.2) !important;
+  background: #f0fdfa !important;
 }
 </style>
