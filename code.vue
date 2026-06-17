@@ -232,6 +232,8 @@
         ref="workflowFrame"
         :src="currentNodeUrl"
         class="tw-w-full tw-h-full tw-border-none"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
+        loading="lazy"
         @load="initIframeMonitor"
       >
       </iframe>
@@ -244,7 +246,7 @@
       <el-empty description="请在上方输入 Agent ID 以加载工作流" />
     </div>
 
-    <el-dialog v-model="showAppConfig" title="可选 Agent 列表" width="400px">
+    <el-dialog v-model="showAppConfig" title="可选 Agent 列表" width="400px" destroy-on-close>
       <div class="tw-flex tw-justify-between tw-mb-4" data-edit-id="64">
         <el-button
           type="primary"
@@ -560,7 +562,7 @@ export default {
         ? this.stepData[0].resultUrl || this.getUrl()
         : this.getUrl();
     },
-    exportWorkflow(type) {
+    exportWorkflow(type, isViewer) {
       let config = {
         title: this.title,
         accountData: this.accountData,
@@ -575,7 +577,7 @@ export default {
           };
         });
       } else {
-        config.isViewer = false;
+        config.isViewer = isViewer;
         config.agentResults = [];
       }
       let time = new Date()
@@ -615,7 +617,6 @@ export default {
         workflow: this.accountData.workflow.join(","),
         id: id || this.accountData.appId,
         transformRadio: 1,
-        solo: true,
       };
       let url = webCpu.documentPrefix;
       return typeof WebTool !== "undefined"
@@ -695,12 +696,26 @@ export default {
         };
         window.removeEventListener("message", callback);
         window.addEventListener("message", callback);
+        // 缓存 callback 引用，便于组件销毁时清理
+        this._iframeMessageCallback = callback;
       }
     },
   },
   mounted() {
     this.initIframeMonitor();
     this.initStepData();
+  },
+  beforeUnmount() {
+    // 组件销毁时移除全局事件监听，防止内存泄漏
+    if (this._iframeMessageCallback) {
+      window.removeEventListener("message", this._iframeMessageCallback);
+      this._iframeMessageCallback = null;
+    }
+    // 清理 iframe onload 引用
+    const iframe = this.$refs.workflowFrame;
+    if (iframe) {
+      iframe.onload = null;
+    }
   },
 };
 </script>
@@ -720,7 +735,7 @@ export default {
 }
 
 .tw-h-viewer {
-  height: 75vh !important;
+  height: 105vh !important;
 }
 
 .tw-max-w-900 {
