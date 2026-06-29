@@ -28,7 +28,6 @@
           <el-button
             circle
             class="tw-mr-1 header-action-btn"
-            style="margin-top: -3px"
             size="small"
             title="新增可选 Agent"
             @click="newAgentDialog()"
@@ -127,7 +126,7 @@
             ]"
           >
             <div class="tw-ml-1" v-if="!flag">
-              <i class="bi bi-rocket-takeoff tw-bot-icon-inner"></i>
+              <i class="bi bi-robot tw-bot-icon-inner"></i>
             </div>
             <el-select
               v-model="accountData.appId"
@@ -184,6 +183,12 @@
             </el-select>
           </div>
         </div>
+        <el-button
+          text
+          :title="relationEditor.tips"
+          @click="startEditRelation()"
+          ><el-icon><edit-pen /></el-icon
+        ></el-button>
       </div>
 
       <div
@@ -388,10 +393,16 @@ export default {
           "60116b5ffe98003395b70402748aeab6",
         ],
         appId: "2d233c906f091e2f17385e4494fdd05f",
+        allLines: [],
       },
       isViewer: false,
       stepData: [],
       currentNodeUrl: "",
+      relationEditor: {
+        tips: "编辑 Agent 依赖关系",
+        url: "",
+        className: "ElementVueItem",
+      },
       flag:
         typeof WebTool !== "undefined"
           ? WebTool.adjustSize([false, false, true])
@@ -488,6 +499,58 @@ export default {
     openAppItem(item) {
       let appId = item.value;
       window.open(`https://transweb.cn?id=${appId}`, "_blank");
+    },
+    updateInputData(stepIndex, dataId) {
+      let arr = this.accountData.allLines;
+      for (let i = 0; i < arr.length; i++) {
+        let idx = arr[i].to;
+        let from = arr[i].from;
+        if (from === Number(stepIndex)) {
+          arr[i].property = arr[i].property || [];
+          if (dataId) {
+            this.stepData[idx].inputData = this.stepData[idx].inputData || {};
+            this.stepData[idx].inputData[from] = {
+              label: this.getLabel(this.stepData[from].appId),
+              dataId: dataId,
+              property: arr[i].property,
+            };
+          }
+        }
+      }
+    },
+    startEditRelation() {
+      let app = JSON.parse(JSON.stringify(this.relationEditor));
+      console.log("this.stepData: ", this.stepData);
+      app.dsl = {
+        data: {
+          nodes: this.stepData.map((item) => {
+            return {
+              id: item.appId,
+              name: this.getLabel(item.appId).slice(0, 5),
+            };
+          }),
+          allLines: this.accountData.allLines,
+        },
+      };
+      let callback = () => {
+        this.accountData.allLines = app.card.task.vueItem.allLines || [];
+        this.$message.success("Agent 依赖关系已更新成功。")
+        webCpu.CardItem.dismissMask(document.body);
+      };
+      webCpu.renderCardDialog(document.body, app, {
+        title: this.relationEditor.tips,
+        closeType: "back",
+        titleStyle: {
+          background: "var(--el-color-primary-light-9)",
+          color: "var(--el-color-primary)",
+        },
+        menu: [
+          {
+            label: "确认",
+            action: callback,
+          },
+        ],
+      });
     },
     handleEditingDialog() {
       this.editingApps = JSON.parse(JSON.stringify(this.apps));
@@ -614,7 +677,7 @@ export default {
         config.agentResults = this.stepData.map((item) => {
           return {
             appId: item.appId,
-            resultUrl: item.resultUrl,
+            resultUrl: item.resultUrl
           };
         });
       } else {
@@ -645,18 +708,19 @@ export default {
       this.currentNodeUrl = WebTool.attachParams(url, {
         _t: new Date().getTime(),
       });
+
       this.activeStepIndex = index || 0;
     },
     getLabel(val) {
       const item = this.apps.find((a) => a.value === val);
-      return item ? item.label : val;
+      return item ? item.label : val.splice(0, 5);
     },
     getUrl(id) {
       let params = {
         headerHidden: true,
         workflow: this.accountData.workflow.join(","),
         id: id || this.accountData.appId,
-        transformRadio: 1,
+        solo: true,
       };
       let url = webCpu.documentPrefix;
       return typeof WebTool !== "undefined"
@@ -671,10 +735,6 @@ export default {
       const checkUrl = (currentUrl) => {
         try {
           if (!iframe.contentWindow) return;
-
-          if (location.origin === webCpu.documentPrefix) {
-            currentUrl = iframe.contentWindow.location.href;
-          }
 
           let params = WebTool.urlQuery(currentUrl);
 
@@ -707,6 +767,22 @@ export default {
               );
             }
 
+            if (inputItem) {
+              this.updateInputData(stepIndex - 1, inputItem);
+              if (this.stepData[stepIndex].inputData) {
+                let tParams = WebTool.urlQuery(currentUrl);
+                tParams.inputData = JSON.stringify(
+                  this.stepData[stepIndex].inputData
+                );
+                delete tParams.inputItem;
+
+                console.log("this.stepData[stepIndex].inputData: ", this.stepData[stepIndex].inputData)
+
+                currentUrl = WebTool.attachParams(webCpu.documentPrefix, tParams);
+              }
+              iframe.src = currentUrl;
+            }
+
             console.log("上一步数据 (node): ", node);
             console.log("当前步数据: ", this.stepData[stepIndex]);
             console.log("步骤数据: ", this.stepData);
@@ -716,23 +792,17 @@ export default {
         }
       };
 
-      if (location.origin === webCpu.documentPrefix) {
-        iframe.onload = () => {
-          checkUrl();
-        };
-      } else {
-        let callback = function (event) {
-          if (event.data && event.data.type === "IFRAME_URL_CHANGE") {
-            const latestIframeUrl = event.data.url;
+      let callback = function (event) {
+        if (event.data && event.data.type === "IFRAME_URL_CHANGE") {
+          const latestIframeUrl = event.data.url;
 
-            checkUrl(latestIframeUrl);
-            console.log("获取到 iframe 最新的 URL:", latestIframeUrl);
-          }
-        };
-        window.removeEventListener("message", callback);
-        window.addEventListener("message", callback);
-        this._iframeMessageCallback = callback;
-      }
+          checkUrl(latestIframeUrl);
+          console.log("获取到 iframe 最新的 URL:", latestIframeUrl);
+        }
+      };
+      window.removeEventListener("message", callback);
+      window.addEventListener("message", callback);
+      this._iframeMessageCallback = callback;
     },
   },
   mounted() {
