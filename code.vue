@@ -71,14 +71,14 @@
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item
-                  title="导出工作流文件"
+                  title="导出编辑模式"
                   @click="exportWorkflow()"
-                  >导出工作流</el-dropdown-item
+                  >导出编辑模式</el-dropdown-item
                 >
                 <el-dropdown-item
-                  title="导出执行记录"
+                  title="导出预览模式"
                   @click="exportWorkflow('record')"
-                  >导出执行记录</el-dropdown-item
+                  >导出预览模式</el-dropdown-item
                 >
               </el-dropdown-menu>
             </template>
@@ -181,14 +181,15 @@
                 :value="item.value || item"
               ></el-option>
             </el-select>
+            <el-button
+              text
+              :title="relationEditor.tips"
+              v-if="!flag"
+              @click="startEditRelation()"
+              ><el-icon><edit-pen /></el-icon
+            ></el-button>
           </div>
         </div>
-        <el-button
-          text
-          :title="relationEditor.tips"
-          @click="startEditRelation()"
-          ><el-icon><edit-pen /></el-icon
-        ></el-button>
       </div>
 
       <div
@@ -395,7 +396,7 @@ export default {
         appId: "2d233c906f091e2f17385e4494fdd05f",
         allLines: [],
       },
-      isViewer: false,
+      isViewer: WebTool.urlQuery(location.href).isView === "1",
       stepData: [],
       currentNodeUrl: "",
       relationEditor: {
@@ -534,7 +535,7 @@ export default {
       };
       let callback = () => {
         this.accountData.allLines = app.card.task.vueItem.allLines || [];
-        this.$message.success("Agent 依赖关系已更新成功。")
+        this.$message.success("Agent 依赖关系已更新成功。");
         webCpu.CardItem.dismissMask(document.body);
       };
       webCpu.renderCardDialog(document.body, app, {
@@ -677,7 +678,7 @@ export default {
         config.agentResults = this.stepData.map((item) => {
           return {
             appId: item.appId,
-            resultUrl: item.resultUrl
+            resultUrl: item.resultUrl,
           };
         });
       } else {
@@ -688,7 +689,7 @@ export default {
         .toLocaleString()
         .replace(/\//g, "-")
         .replace(/:\s*/g, "-");
-      let tName = `执行记录_${time}`;
+      let tName = `${config.title || "workflow"}-${time}.html`;
       WebTool.exportWorkflow(
         config,
         (name) => {
@@ -712,8 +713,9 @@ export default {
       this.activeStepIndex = index || 0;
     },
     getLabel(val) {
+      val = val || "";
       const item = this.apps.find((a) => a.value === val);
-      return item ? item.label : val.splice(0, 5);
+      return item ? item.label : val.slice(0, 5);
     },
     getUrl(id) {
       let params = {
@@ -776,9 +778,15 @@ export default {
                 );
                 delete tParams.inputItem;
 
-                console.log("this.stepData[stepIndex].inputData: ", this.stepData[stepIndex].inputData)
+                console.log(
+                  "this.stepData[stepIndex].inputData: ",
+                  this.stepData[stepIndex].inputData
+                );
 
-                currentUrl = WebTool.attachParams(webCpu.documentPrefix, tParams);
+                currentUrl = WebTool.attachParams(
+                  webCpu.documentPrefix,
+                  tParams
+                );
               }
               iframe.src = currentUrl;
             }

@@ -11,7 +11,7 @@
           <h2
             class="tw-text-lg tw-font-semibold tw-leading-relaxed tw-text-slate-900"
           >
-            Agent 依赖关系编排器
+            Agent 工作流编排器
           </h2>
         </div>
         <el-button
@@ -142,7 +142,7 @@
             size="small"
             circle
             class="tw-shadow tw-bg-white tw-border-blue-300 tw-text-blue-500 hover:tw-bg-blue-50 tw-w-6 tw-h-6 tw-flex tw-items-center tw-justify-center"
-            @click.stop="editLineProperty(line.rawIndex)"
+            @click.stop="editSerialLine(idx)"
           >
             <i class="bi bi-pencil-square tw-text-xs"></i>
           </el-button>
@@ -170,9 +170,7 @@
                 : 'tw-border-purple-300',
               'line-menu-btn',
             ]"
-            :title="`连线 ${nodes[line.from].id}#${nodes[line.from].name} → ${
-              nodes[line.to].id
-            }#${nodes[line.to].name}`"
+            :title="`连线 ${nodes[line.from].id} → ${nodes[line.to].id}`"
           >
             <span class="tw-text-[10px] tw-font-bold"
               >{{ line.from }}-{{ line.to }}</span
@@ -184,14 +182,14 @@
             class="tw-absolute tw-bottom-full tw-mb-2 tw-flex tw-flex-col tw-bg-white tw-rounded-lg tw-shadow-lg tw-border tw-border-slate-200 tw-overflow-hidden tw-z-40"
           >
             <button
-              @click="editLineProperty(line.rawIndex)"
+              @click="editExtraLine(idx)"
               class="tw-px-3 tw-py-2 tw-text-sm tw-text-slate-700 tw-hover:bg-slate-50 tw-transition-all tw-flex tw-items-center tw-gap-2 tw-whitespace-nowrap"
             >
               <i class="bi bi-pencil-square"></i>
               编辑
             </button>
             <button
-              @click="deleteExtraLine(line.rawIndex)"
+              @click="deleteExtraLine(idx)"
               class="tw-px-3 tw-py-2 tw-text-sm tw-text-red-600 tw-hover:bg-red-50 tw-transition-all tw-flex tw-items-center tw-gap-2 tw-whitespace-nowrap"
             >
               <i class="bi bi-trash"></i>
@@ -218,15 +216,11 @@
             v-model="lineForm.from"
             placeholder="选择起点"
             class="tw-w-full"
-            @change="startNodeChange(lineForm.from)"
           >
             <el-option
               v-for="(node, idx) in nodes"
               :key="node.id"
-              :label="`${node.id.slice(0, 5)}#${idx} - ${node.name.slice(
-                0,
-                8
-              )}`"
+              :label="`${node.id.slice(0, 5)}#${idx} - ${node.name}`"
               :value="idx"
             />
           </el-select>
@@ -244,10 +238,7 @@
             <el-option
               v-for="(node, idx) in nodes"
               :key="node.id"
-              :label="`${node.id.slice(0, 5)}#${idx} - ${node.name.slice(
-                0,
-                8
-              )}`"
+              :label="`${node.id.slice(0, 5)}#${idx} - ${node.name}`"
               :value="idx"
               :disabled="isNodeDisabled(idx)"
             />
@@ -260,6 +251,68 @@
           >
           <el-select
             v-model="lineForm.property"
+            placeholder="选择属性"
+            class="tw-w-full"
+          >
+            <el-option label="条件转移" value="condition" />
+            <el-option label="数据流" value="data-flow" />
+            <el-option label="错误处理" value="error-handler" />
+            <el-option label="并行执行" value="parallel" />
+          </el-select>
+        </div>
+        <div>
+          <label
+            class="tw-block tw-text-sm tw-font-medium tw-leading-relaxed tw-text-slate-900 tw-mb-2"
+            >备注</label
+          >
+          <el-input
+            v-model="lineForm.remark"
+            type="textarea"
+            placeholder="添加备注信息"
+            :rows="3"
+          />
+        </div>
+      </div>
+      <template #footer>
+        <div class="tw-flex tw-gap-2 tw-justify-end">
+          <el-button @click="showAddLineDialog = false">取消</el-button>
+          <el-button type="primary" @click="confirmAddLine">{{
+            editingLineIdx !== -1 ? "更新" : "添加"
+          }}</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <el-dialog
+      v-model="showEditSerialLineDialog"
+      title="编辑相邻连线属性"
+      width="400px"
+      @close="resetLineForm"
+    >
+      <div class="tw-space-y-4">
+        <div v-if="serialLineForm.from !== null && serialLineForm.to !== null">
+          <label
+            class="tw-block tw-text-sm tw-font-medium tw-leading-relaxed tw-text-slate-900 tw-mb-2"
+            >连线路径</label
+          >
+          <div
+            class="tw-rounded tw-bg-slate-50 tw-px-3 tw-py-2 tw-text-sm tw-leading-relaxed tw-text-slate-700"
+          >
+            {{ nodes[serialLineForm.from].id.slice(0, 5) }}#{{
+              serialLineForm.from
+            }}
+            → {{ nodes[serialLineForm.to].id.slice(0, 5) }}#{{
+              serialLineForm.to
+            }}
+          </div>
+        </div>
+        <div>
+          <label
+            class="tw-block tw-text-sm tw-font-medium tw-leading-relaxed tw-text-slate-900 tw-mb-2"
+            >连线属性</label
+          >
+          <el-select
+            v-model="serialLineForm.property"
             placeholder="选择属性"
             class="tw-w-full"
             multiple
@@ -280,7 +333,7 @@
             >备注</label
           >
           <el-input
-            v-model="lineForm.remark"
+            v-model="serialLineForm.remark"
             type="textarea"
             placeholder="添加备注信息"
             :rows="3"
@@ -289,8 +342,10 @@
       </div>
       <template #footer>
         <div class="tw-flex tw-gap-2 tw-justify-end">
-          <el-button @click="showAddLineDialog = false">取消</el-button>
-          <el-button type="primary" @click="confirmAddLine">添加</el-button>
+          <el-button @click="showEditSerialLineDialog = false">取消</el-button>
+          <el-button type="primary" @click="confirmEditSerialLine"
+            >更新</el-button
+          >
         </div>
       </template>
     </el-dialog>
@@ -310,11 +365,8 @@
           <div
             class="tw-rounded tw-bg-slate-50 tw-px-3 tw-py-2 tw-text-sm tw-leading-relaxed tw-text-slate-700"
           >
-            {{ nodes[lineForm.from].id.slice(0, 5) }}#{{ lineForm.from }}[{{
-              nodes[lineForm.from].name
-            }}] → {{ nodes[lineForm.to].id.slice(0, 5) }}#{{ lineForm.to }}[{{
-              nodes[lineForm.to].name
-            }}]
+            {{ nodes[lineForm.from].id.slice(0, 5) }}#{{ lineForm.from }} →
+            {{ nodes[lineForm.to].id.slice(0, 5) }}#{{ lineForm.to }}
           </div>
         </div>
         <div>
@@ -326,7 +378,6 @@
             v-model="lineForm.property"
             placeholder="选择属性"
             multiple
-            @change="handlePropertyChange()"
             collapse-tags
             collapse-tags-tooltip
             class="tw-w-full"
@@ -337,18 +388,7 @@
               :label="item"
               :value="item"
             />
-            <el-option
-              v-if="Number(lineForm.to) - Number(lineForm.from) === 1"
-              label="(none)"
-              value="(none)"
-              key="(none)"
-            ></el-option>
           </el-select>
-          <span
-            style="font-size: 12px; margin-top: 5px; color: #888"
-            v-if="lineForm.property.indexOf('(none)') !== -1"
-            >当前相邻节点不传递数据</span
-          >
         </div>
         <div>
           <label
@@ -379,23 +419,41 @@ export default {
   data() {
     return {
       nodes: [
-        { id: "agent-1", name: "数据采集" },
-        { id: "agent-2", name: "数据清洗" },
-        { id: "agent-3", name: "特征工程" },
+        {
+          id: "agent-1",
+          name: "数据采集",
+        },
+        {
+          id: "agent-2",
+          name: "数据清洗",
+        },
+        {
+          id: "agent-3",
+          name: "特征工程",
+        },
       ],
-      // 统一的连线数据中心，合并管理相邻和非相邻连线
-      allLines: [],
+      extraLines: [],
+      serialLineProperties: [],
       showAddLineDialog: false,
       showEditLineDialog: false,
       currentOptions: [],
+      showEditSerialLineDialog: false,
       lineForm: {
         from: null,
         to: null,
-        property: [],
+        property: "condition",
         remark: "",
       },
-      editingLineRawIdx: -1, // 正在编辑的连线在 allLines 中的真实索引
+      serialLineForm: {
+        from: null,
+        to: null,
+        property: "condition",
+        remark: "",
+      },
+      editingLineIdx: -1,
+      editingSerialLineIdx: -1,
       selectedLineIdx: -1,
+      selectedSerialLineIdx: -1,
       hoveredNodeIdx: -1,
       hoveredLineIdx: -1,
       expandedLineMenuIdx: -1,
@@ -407,54 +465,38 @@ export default {
     };
   },
   computed: {
-    // 过滤出相邻节点的基础连线，计算坐标用于 SVG 直线渲染
     serialLines() {
       const lines = [];
       if (this.nodePositions.length < this.nodes.length) return lines;
 
-      this.allLines.forEach((line, index) => {
-        if (line.to - line.from === 1) {
-          const pos1 = this.nodePositions[line.from];
-          const pos2 = this.nodePositions[line.to];
-          if (pos1 && pos2) {
-            lines.push({
-              rawIndex: index, // 保留其在全量数组中的真实索引
-              from: line.from,
-              to: line.to,
-              x1: pos1.x + pos1.width + 2,
-              y1: pos1.y + pos1.height / 2,
-              x2: pos2.x - 2,
-              y2: pos2.y + pos2.height / 2,
-            });
-          }
-        }
-      });
-      return lines;
-    },
-    // 过滤出跨节点的额外连线，计算路径用于 SVG 贝塞尔曲线渲染
-    extraLines() {
-      const lines = [];
-      this.allLines.forEach((line, index) => {
-        if (line.to - line.from > 1) {
+      for (let i = 0; i < this.nodes.length - 1; i++) {
+        if (this.nodePositions[i] && this.nodePositions[i + 1]) {
+          const pos1 = this.nodePositions[i];
+          const pos2 = this.nodePositions[i + 1];
           lines.push({
-            ...line,
-            rawIndex: index, // 保留其在全量数组中的真实索引
-            path: this.getExtraLinePath(line),
+            x1: pos1.x + pos1.width + 2,
+            y1: pos1.y + pos1.height / 2,
+            x2: pos2.x - 2,
+            y2: pos2.y + pos2.height / 2,
           });
         }
-      });
+      }
       return lines;
     },
     isAddLineDisabled() {
-      const maxExtraLines =
+      return (
+        this.extraLines.length >=
         (this.nodes.length * (this.nodes.length - 1)) / 2 -
-        (this.nodes.length - 1);
-      return this.extraLines.length >= maxExtraLines;
+          (this.nodes.length - 1)
+      );
     },
   },
   watch: {
     nodePositions: {
       handler() {
+        this.extraLines.forEach((line, idx) => {
+          this.extraLines[idx].path = this.getExtraLinePath(line);
+        });
         this.updateSvgDimensions();
       },
       deep: true,
@@ -464,27 +506,28 @@ export default {
     toggleLineMenu(idx) {
       this.expandedLineMenuIdx = this.expandedLineMenuIdx === idx ? -1 : idx;
     },
-    getLineOptions(nodeIdx, callback) {
-      const node = this.nodes[nodeIdx] || this.nodes[0];
-      if (typeof aigcInterface !== "undefined" && aigcInterface.getAppData) {
-        aigcInterface.getAppData(
-          node.id,
-          (data) => {
-            let keys = Object.keys(data);
-            if (typeof callback === "function") callback(keys);
-          },
-          () => {
-            if (typeof callback === "function") callback([]);
+    getLineOptions(idx, callback) {
+      idx = idx || 0;
+      let node = this.nodes[idx];
+      aigcInterface.getAppData(
+        node.id,
+        (data) => {
+          let keys = Object.keys(data);
+          if (typeof callback === "function") {
+            callback(keys);
           }
-        );
-      } else {
-        if (typeof callback === "function")
-          callback(["condition", "data-flow", "error-handler", "parallel"]);
-      }
+        },
+        (err) => {
+          callback([]);
+        }
+      );
     },
     getSerialLineMenuPosition(idx) {
       const line = this.serialLines[idx];
-      if (!line) return { display: "none" };
+      if (!line)
+        return {
+          display: "none",
+        };
 
       const midX = (line.x1 + line.x2) / 2;
       const midY = (line.y1 + line.y2) / 2;
@@ -499,7 +542,10 @@ export default {
     getLineMenuPosition(idx) {
       const pathEl = this.extraLineRefs[idx];
       const line = this.extraLines[idx];
-      if (!pathEl || !line) return { display: "none" };
+      if (!pathEl || !line)
+        return {
+          display: "none",
+        };
 
       try {
         const totalLength = pathEl.getTotalLength();
@@ -519,18 +565,18 @@ export default {
               : 30,
         };
       } catch (e) {
-        return { display: "none" };
+        return {
+          display: "none",
+        };
       }
     },
     isNodeDisabled(idx) {
       if (this.lineForm.from === null) return false;
-      if (idx - this.lineForm.from === 1) return true; // 相邻节点不可再次手动添加
-      return (
-        idx <= this.lineForm.from ||
-        this.allLines.some(
-          (line) => line.from === this.lineForm.from && line.to === idx
-        )
+      if (idx - this.lineForm.from === 1) return true;
+      const lineExists = this.extraLines.some(
+        (line) => line.from === this.lineForm.from && line.to === idx
       );
+      return idx <= this.lineForm.from || lineExists;
     },
     calculateNodePositions() {
       const action = () => {
@@ -573,11 +619,6 @@ export default {
         this.svgHeight = Math.max(360, container.scrollHeight);
       }
     },
-    handlePropertyChange() {
-      if (this.lineForm.property.indexOf("(none)") !== -1) {
-        this.lineForm.property = ["(none)"];
-      }
-    },
     getExtraLinePath(line) {
       if (!this.nodePositions[line.from] || !this.nodePositions[line.to])
         return "";
@@ -593,77 +634,78 @@ export default {
       const distance = Math.abs(x2 - x1);
       const controlOffset = Math.min(distance / 3, 80);
       const step = line.to - line.from;
+
       const curveHeight = 35 + step * 20;
 
       return `M ${x1} ${y1} C ${x1 + controlOffset} ${y1 + curveHeight}, ${
         x2 - controlOffset
       } ${y2 + curveHeight}, ${x2} ${y2}`;
     },
-    // 合并后的统一编辑函数（支持基础连线和跨节点连线）
-    editLineProperty(rawIndex) {
-      const line = this.allLines[rawIndex];
-      if (!line) return;
-
-      this.lineForm = {
-        from: line.from,
-        to: line.to,
-        property: Array.isArray(line.property)
-          ? [...line.property]
-          : line.property
-          ? [line.property]
-          : [],
-        remark: line.remark || "",
+    selectSerialLine(idx) {
+      this.selectedSerialLineIdx =
+        this.selectedSerialLineIdx === idx ? -1 : idx;
+    },
+    editSerialLine(idx) {
+      const property = this.serialLineProperties[idx] || {
+        property: "",
+        remark: "",
       };
-
-      this.editingLineRawIdx = rawIndex;
-      this.showEditLineDialog = true;
-      this.expandedLineMenuIdx = -1;
-
-      // 依据起点的 index 获取异步下拉配置项数据
-      this.getLineOptions(line.from, (arr) => {
+      this.serialLineForm = {
+        from: idx,
+        to: idx + 1,
+        property: property.property || [],
+        remark: property.remark || "",
+      };
+      this.getLineOptions(idx, (arr) => {
         this.currentOptions = arr;
       });
+      this.editingSerialLineIdx = idx;
+      this.showEditSerialLineDialog = true;
     },
-    // 确认更新属性逻辑
-    confirmEditLine() {
-      if (this.editingLineRawIdx !== -1) {
-        const targetLine = this.allLines[this.editingLineRawIdx];
-        this.allLines[this.editingLineRawIdx] = {
-          ...targetLine,
-          property: this.lineForm.property,
-          remark: this.lineForm.remark,
+    confirmEditSerialLine() {
+      if (this.editingSerialLineIdx !== -1) {
+        this.serialLineProperties[this.editingSerialLineIdx] = {
+          property: this.serialLineForm.property,
+          remark: this.serialLineForm.remark,
         };
-        this.showEditLineDialog = false;
+        this.showEditSerialLineDialog = false;
         this.resetLineForm();
-        this.calculateNodePositions();
-        console.log("this.allLines: ", this.allLines);
-        this.$message.success("关系更新成功。")
       }
+      console.log("this.extraLines: ", this.extraLines);
     },
     selectExtraLine(idx) {
       this.selectedLineIdx = this.selectedLineIdx === idx ? -1 : idx;
     },
-    deleteExtraLine(rawIndex) {
+    editExtraLine(idx) {
+      const line = this.extraLines[idx];
+      this.lineForm = {
+        from: line.from,
+        to: line.to,
+        property: line.property || [],
+        remark: line.remark || "",
+      };
+      this.editingLineIdx = idx;
+      this.showEditLineDialog = true;
+      this.expandedLineMenuIdx = -1;
+      this.getLineOptions(idx, (arr) => {
+        this.currentOptions = arr;
+      });
+    },
+    deleteExtraLine(idx) {
       this.$confirm("确定删除该连线？", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning",
       })
         .then(() => {
-          this.allLines.splice(rawIndex, 1);
+          this.extraLines.splice(idx, 1);
+          delete this.extraLineRefs[idx];
           this.selectedLineIdx = -1;
           this.expandedLineMenuIdx = -1;
-          this.extraLineRefs = {}; // 重置引用触发重算
           this.calculateNodePositions();
-          console.log("this.allLines (After Delete): ", this.allLines);
+          console.log("this.extraLines: ", this.extraLines);
         })
         .catch(() => {});
-    },
-    startNodeChange(from) {
-      this.getLineOptions(from, (arr) => {
-        this.currentOptions = arr;
-        this.lineForm.property = [];
-      });
     },
     confirmAddLine() {
       if (
@@ -675,79 +717,68 @@ export default {
         return;
       }
 
-      const isExists = this.allLines.some(
+      const isExists = this.extraLines.some(
         (line) =>
           line.from === this.lineForm.from && line.to === this.lineForm.to
       );
+
       if (isExists) {
         this.$message.error("该连线已存在");
         return;
       }
 
-      this.allLines.push({
-        from: this.lineForm.from,
-        to: this.lineForm.to,
-        property: this.lineForm.property,
-        remark: this.lineForm.remark,
-      });
+      const newLine = {
+        ...this.lineForm,
+        path: "",
+      };
+      newLine.path = this.getExtraLinePath(newLine);
+      this.extraLines.push(newLine);
 
       this.showAddLineDialog = false;
       this.resetLineForm();
       this.calculateNodePositions();
-      console.log("this.allLines (After Add): ", this.allLines);
+      console.log("this.extraLines: ", this.extraLines);
+    },
+    confirmEditLine() {
+      if (this.editingLineIdx !== -1) {
+        const updatedLine = {
+          ...this.lineForm,
+        };
+        updatedLine.path = this.getExtraLinePath(updatedLine);
+        this.extraLines[this.editingLineIdx] = updatedLine;
+        this.showEditLineDialog = false;
+        this.resetLineForm();
+        this.calculateNodePositions();
+        console.log("this.extraLines: ", this.extraLines);
+      }
     },
     resetLineForm() {
       this.lineForm = {
         from: null,
         to: null,
-        property: [],
+        property: "condition",
         remark: "",
       };
-      this.editingLineRawIdx = -1;
+      this.serialLineForm = {
+        from: null,
+        to: null,
+        property: "condition",
+        remark: "",
+      };
+      this.editingLineIdx = -1;
+      this.editingSerialLineIdx = -1;
     },
   },
   mounted() {
-    // 1. 生成默认的相邻节点基础连线
-    const baseLines = [];
-    for (let i = 0; i < this.nodes.length - 1; i++) {
-      baseLines.push({
-        from: i,
-        to: i + 1,
-        property: [],
-        remark: "",
-      });
-    }
-
-    // 2. 将已有数据（假设从外部、本地存储或组件现有变量传入）与基础连线合并取并集
-    // 这里的 this.allLines 可以是父组件传入的 prop，也可以是本地已有的持久化数据
-    const existingLines = this.allLines || [];
-
-    // 3. 以 from 和 to 为唯一标识进行去重合并
-    // 策略：如果 existingLines 中已存在该路径，则优先使用已有的（保留自定义属性）；否则使用基础连线
-    const mergedLines = [...existingLines];
-
-    baseLines.forEach((baseLine) => {
-      const isAlreadyExists = mergedLines.some(
-        (line) => line.from === baseLine.from && line.to === baseLine.to
-      );
-      if (!isAlreadyExists) {
-        mergedLines.push(baseLine);
-      }
-    });
-
-    // 4. 对合并后的连线按照路径先后顺序做个微型排序（可选，方便维护和 debug）
-    mergedLines.sort((a, b) => {
-      if (a.from === b.from) return a.to - b.to;
-      return a.from - b.from;
-    });
-
-    // 5. 最终赋值
-    this.allLines = mergedLines;
-
-    // 6. 触发布局计算
     this.calculateNodePositions();
+    this.serialLineProperties = new Array(this.nodes.length - 1)
+      .fill(null)
+      .map(() => ({
+        property: "",
+        remark: "",
+      }));
     window.addEventListener("resize", this.calculateNodePositions);
-    console.log("Union merged allLines: ", this.allLines);
+    console.log("this.extraLines: ", this.extraLines);
   },
   beforeUnmount() {
     window.removeEventListener("resize", this.calculateNodePositions);
@@ -759,46 +790,81 @@ export default {
 .tw-bg-blue-main {
   background-color: rgba(59, 130, 246, 0.1);
 }
+
 .tw-stroke-blue-400 {
   stroke: #60a5fa !important;
 }
+
 .tw-stroke-purple-main {
   stroke: #a855f7;
 }
+
 .tw-stroke-purple-700 {
   stroke: #6b21a8;
 }
+
 .tw-stroke-orange-500 {
   stroke: #f97316;
 }
+
+.tw-text-blue-600 {
+  color: #2563eb;
+}
+
+.tw-text-purple-600 {
+  color: #9333ea;
+}
+
 .tw-border-blue-300 {
   border-color: #93c5fd;
 }
+
 .tw-border-blue-500 {
   border-color: #3b82f6;
 }
+
 .tw-border-purple-300 {
   border-color: #d8b4fe;
 }
+
 .tw-border-purple-700 {
   border-color: #6b21a8;
 }
+
 .tw-border-orange-500 {
   border-color: #ea580c;
 }
+
 .tw-bg-orange-500 {
   background-color: #f97316 !important;
   color: #ffffff !important;
 }
+
 .tw-bg-blue-50 {
   background-color: #eff6ff;
 }
+
+.tw-border-blue-200 {
+  border-color: #bfdbfe;
+}
+
+.tw-bg-orange-50 {
+  background-color: #fff7ed;
+}
+
+.tw-border-orange-200 {
+  border-color: #fed7aa;
+}
+
 .tw-cursor-pointer {
   cursor: pointer;
 }
+
+/* 可选增强：为非相邻节点连线添加平滑的呼吸/流动微动画效果 */
 .extra-path-dashed {
   transition: stroke 0.3s, stroke-width 0.3s;
 }
+
 .line-menu-btn {
   width: 28px !important;
   height: 28px !important;
@@ -809,9 +875,11 @@ export default {
   background-color: #ffffff;
   color: #a855f7;
 }
+
 .line-menu-btn:hover {
   background-color: #f3e8ff;
 }
+
 .canvas-container {
   position: relative;
 }
