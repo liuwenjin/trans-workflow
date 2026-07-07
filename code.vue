@@ -221,7 +221,6 @@
           <el-button
             circle
             @click="resetWorkflow()"
-            :disabled="isViewer"
             class="tw-shadow-sm reset-btn tw-mt-4"
           >
             <el-icon>
@@ -237,7 +236,6 @@
           >
             <el-button
               :disabled="
-                isViewer ||
                 !(
                   stepData[activeStepIndex] &&
                   stepData[activeStepIndex].resultUrl
@@ -666,6 +664,8 @@ export default {
       this.currentNodeUrl = this.isViewer
         ? this.stepData[0].resultUrl || this.getUrl()
         : this.getUrl();
+
+      this.accountData.allLines = [];
     },
     exportWorkflow(type, isViewer) {
       let config = {

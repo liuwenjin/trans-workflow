@@ -159,6 +159,7 @@
           <el-button
             type="primary"
             size="small"
+            v-if="nodes[line.from] && nodes[line.to]"
             circle
             @click.stop="toggleLineMenu(idx)"
             class="tw-shadow-md tw-flex-shrink-0 tw-border-2 tw-transition-all"
@@ -338,7 +339,7 @@
               :value="item"
             />
             <el-option
-              v-if="Number(lineForm.to) - Number(lineForm.from) === 1"
+              v-if="Number(lineForm.to) - Number(lineForm.from) === 1 && nodes[lineForm.from] && nodes[lineForm.to]"
               label="(none)"
               value="(none)"
               key="(none)"
@@ -416,7 +417,7 @@ export default {
         if (line.to - line.from === 1) {
           const pos1 = this.nodePositions[line.from];
           const pos2 = this.nodePositions[line.to];
-          if (pos1 && pos2) {
+          if (pos1 && pos2 && this.nodes[line.from] && this.nodes[line.to]) {
             lines.push({
               rawIndex: index, // 保留其在全量数组中的真实索引
               from: line.from,
@@ -435,7 +436,7 @@ export default {
     extraLines() {
       const lines = [];
       this.allLines.forEach((line, index) => {
-        if (line.to - line.from > 1) {
+        if (line.to - line.from > 1 && this.nodes[line.from] && this.nodes[line.to]) {
           lines.push({
             ...line,
             rawIndex: index, // 保留其在全量数组中的真实索引

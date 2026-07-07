@@ -1,5 +1,5 @@
 // 实体交付仪式感：动态 Loading 下载拦截动效
-const triggerPackDownload = async (btnElement) => {
+const triggerPackDownload = async (btnElement, name) => {
   if (btnElement.classList.contains('tw-pointer-events-none')) return;
 
   const iconBox = btnElement.querySelector('.btn-icon-box');
@@ -19,13 +19,13 @@ const triggerPackDownload = async (btnElement) => {
   await new Promise(resolve => setTimeout(resolve, 1400));
 
   try {
-    const response = await fetch('https://transweb.cn/workflow/index.html');
+    const response = await fetch(`https://transweb.cn/workflow/${name || 'index.html'}`);
     if (!response.ok) throw new Error(`Download failed: ${response.status}`);
     const blob = await response.blob();
     const downloadUrl = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = downloadUrl;
-    link.download = 'trans-workflow-asset.html';
+    link.download = name || 'trans-workflow.html';
     document.body.appendChild(link);
     link.click();
     link.remove();
