@@ -519,7 +519,7 @@ export default {
     },
     startEditRelation() {
       let app = JSON.parse(JSON.stringify(this.relationEditor));
-      console.log("this.stepData: ", this.stepData);
+      // console.log("this.stepData: ", this.stepData);
       app.dsl = {
         data: {
           nodes: this.stepData.map((item) => {
@@ -665,7 +665,7 @@ export default {
         ? this.stepData[0].resultUrl || this.getUrl()
         : this.getUrl();
 
-      this.accountData.allLines = [];
+      //this.accountData.allLines = [];
     },
     exportWorkflow(type, isViewer) {
       let config = {
