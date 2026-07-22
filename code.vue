@@ -70,9 +70,7 @@
             </el-button>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item
-                  title="导出编辑模式"
-                  @click="exportWorkflow()"
+                <el-dropdown-item title="导出编辑模式" @click="exportWorkflow()"
                   >导出编辑模式</el-dropdown-item
                 >
                 <el-dropdown-item
@@ -111,85 +109,200 @@
       >
         <div
           :class="[
-            'tw-flex tw-w-full',
+            'tw-w-full tw-transition-all tw-duration-300',
             flag
-              ? 'tw-flex-col tw-gap-3 tw-bg-transparent tw-border-none tw-shadow-none'
-              : 'tw-flex-row tw-items-stretch tw-bg-white tw-rounded-2xl tw-border tw-border-indigo-50 tw-shadow-card configuration-wrapper tw-flex-1',
+              ? 'tw-flex tw-flex-col tw-gap-3 tw-bg-transparent'
+              : 'tw-flex tw-flex-col tw-gap-2 tw-bg-white tw-p-4 tw-rounded-2xl tw-border tw-border-indigo-50 tw-shadow-card configuration-wrapper',
           ]"
         >
+          <!-- 节点流标题 / 数量统计 / 折叠控制栏 -->
           <div
-            :class="[
-              'tw-flex tw-items-center tw-gap-2',
-              flag
-                ? 'tw-w-full'
-                : 'tw-px-3 tw-py-1 tw-flex-initial tw-w-custom',
-            ]"
+            class="tw-text-xs tw-text-slate-400 tw-flex tw-justify-between tw-items-center tw-select-none"
           >
-            <div class="tw-ml-1" v-if="!flag">
-              <i class="bi bi-robot tw-bot-icon-inner"></i>
+            <div
+              class="tw-flex tw-items-center tw-gap-1.5 tw-cursor-pointer hover:tw-text-indigo-600 tw-transition-colors"
+              @click="isExpanded = !isExpanded"
+            >
+              <span class="tw-font-medium">工作流节点链路：</span>
+              <i
+                :class="[
+                  'bi bi-chevron-down tw-transition-transform tw-duration-200 tw-text-xs',
+                  !isExpanded ? 'tw--rotate-90' : '',
+                ]"
+              ></i>
+              <span class="tw-text-[11px] tw-text-slate-400">
+                ({{ isExpanded ? "点击收起" : "点击展开" }})
+              </span>
             </div>
-            <el-select
-              v-model="accountData.appId"
-              allow-create
-              filterable
-              placeholder="请挑选或输入 Agent ID"
-              :class="[
-                'tw-w-full',
-                flag ? 'mobile-select-bordered' : 'custom-select-no-border',
-              ]"
-            >
-              <el-option
-                v-for="item in apps"
-                :key="item.value"
-                :label="item.label || item"
-                :value="item.value || item"
-              ></el-option>
-            </el-select>
+
+            <span class="tw-text-slate-400 tw-font-mono">
+              共
+              {{
+                accountData.workflow.length + (accountData.appId ? 1 : 0)
+              }}
+              个节点
+            </span>
           </div>
 
-          <div v-if="!flag" class="tw-flex-shrink-0 tw-flex tw-items-center">
-            <div class="tw-w-px tw-h-8 tw-bg-slate-100 tw-rounded-full"></div>
-          </div>
-
+          <!-- 统一的线性链路容器（受 isExpanded 状态控制显示/隐藏，附带过渡动画） -->
           <div
+            v-show="isExpanded"
             :class="[
-              'tw-flex tw-items-center tw-gap-2',
-              flag ? 'tw-w-full' : 'tw-px-3 tw-py-1 tw-flex-1',
+              'tw-transition-all tw-duration-300 tw-pt-1',
+              flag
+                ? 'tw-flex tw-flex-col tw-items-center tw-gap-2'
+                : 'tw-flex tw-flex-wrap tw-items-center tw-gap-2',
             ]"
           >
-            <i
-              class="bi bi-arrow-right tw-text-teal-500 tw-text-base tw-ml-1 tw-flex-shrink-0 tw-drop-shadow-glow"
-              v-if="!flag"
-            ></i>
-            <el-select
-              v-model="accountData.workflow"
-              multiple
-              collapse-tags
-              collapse-tags-tooltip
-              allow-create
-              filterable
-              placeholder="请挑选或添加工作流节点"
+            <!-- 1. 主 Agent 节点（链路起点 #0 / #1） -->
+            <div
               :class="[
-                'tw-w-full',
-                flag ? 'mobile-select-bordered' : 'custom-select-no-border',
+                'tw-flex tw-items-center tw-shrink-0',
+                flag ? 'tw-flex-col tw-gap-2' : 'tw-gap-2',
               ]"
             >
-              <el-option
-                v-for="item in apps"
-                :key="item.value"
-                :label="item.label || item"
-                :value="item.value || item"
-              ></el-option>
-            </el-select>
-            <el-button
-              text
-              :title="relationEditor.tips"
-              v-if="!flag"
-              @click="startEditRelation()"
-              ><el-icon><edit-pen /></el-icon
-            ></el-button>
+              <!-- 主 Agent 卡片 -->
+              <div
+                class="tw-flex tw-items-center tw-gap-2 tw-bg-indigo-50/70 tw-border tw-border-indigo-200 tw-px-3 tw-py-1.5 tw-rounded-lg tw-shrink-0"
+              >
+                <div
+                  class="tw-flex tw-items-center tw-gap-1 tw-text-indigo-600 tw-font-semibold tw-text-sm"
+                >
+                  <i class="bi bi-robot tw-text-base"></i>
+                </div>
+
+                <el-select
+                  v-model="accountData.appId"
+                  allow-create
+                  filterable
+                  placeholder="挑选或输入 Agent ID"
+                  class="tw-w-44 custom-select-no-border"
+                >
+                  <el-option
+                    v-for="item in apps"
+                    :key="item.value"
+                    :label="item.label || item"
+                    :value="item.value || item"
+                  />
+                </el-select>
+              </div>
+
+              <!-- 主 Agent 指向后续节点的连接箭头 -->
+              <div
+                class="tw-flex tw-items-center tw-justify-center tw-text-indigo-500 tw-shrink-0"
+              >
+                <i
+                  :class="[
+                    flag ? 'bi bi-arrow-down' : 'bi bi-arrow-right',
+                    'tw-text-sm tw-drop-shadow-glow',
+                  ]"
+                ></i>
+              </div>
+            </div>
+
+            <!-- 2. 工作流节点列表 -->
+            <div
+              v-for="(node, index) in accountData.workflow"
+              :key="index"
+              :class="[
+                'tw-flex tw-items-center tw-shrink-0',
+                flag ? 'tw-flex-col tw-gap-2' : 'tw-gap-2',
+              ]"
+            >
+              <!-- 单个工作流节点卡片 -->
+              <div
+                class="tw-group tw-relative tw-flex tw-items-center tw-gap-1.5 tw-bg-slate-50 tw-hover:bg-indigo-50/50 tw-border tw-border-slate-200 tw-hover:border-indigo-200 tw-px-3 tw-py-1.5 tw-rounded-lg tw-transition-all tw-shrink-0"
+              >
+                <span class="tw-text-xs tw-font-bold tw-text-indigo-400">
+                  #{{ index + 1 }}
+                </span>
+                <span class="tw-text-sm tw-text-slate-700 tw-font-medium">
+                  {{ getLabel(node) }}
+                </span>
+
+                <!-- 节点操作按钮组 -->
+                <div
+                  class="tw-flex tw-items-center tw-gap-1 tw-ml-2 tw-opacity-80 group-hover:tw-opacity-100 tw-transition-opacity"
+                >
+                  <!-- 前移/上移 -->
+                  <button
+                    v-if="index > 0"
+                    @click="moveNode(index, -1)"
+                    title="前移节点"
+                    class="tw-p-0.5 tw-text-slate-400 hover:tw-text-indigo-600 tw-rounded hover:tw-bg-white"
+                  >
+                    <i
+                      :class="flag ? 'bi bi-chevron-up' : 'bi bi-chevron-left'"
+                    ></i>
+                  </button>
+
+                  <!-- 后移/下移 -->
+                  <button
+                    v-if="index < accountData.workflow.length - 1"
+                    @click="moveNode(index, 1)"
+                    title="后移节点"
+                    class="tw-p-0.5 tw-text-slate-400 hover:tw-text-indigo-600 tw-rounded hover:tw-bg-white"
+                  >
+                    <i
+                      :class="
+                        flag ? 'bi bi-chevron-down' : 'bi bi-chevron-right'
+                      "
+                    ></i>
+                  </button>
+
+                  <!-- 删除节点 -->
+                  <button
+                    @click="removeNode(index)"
+                    title="删除节点"
+                    class="tw-p-0.5 tw-text-slate-400 hover:tw-text-red-500 tw-rounded hover:tw-bg-white"
+                  >
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 节点卡片后的连接箭头 -->
+              <div
+                class="tw-flex tw-items-center tw-justify-center tw-text-indigo-400 tw-shrink-0"
+              >
+                <i
+                  :class="[
+                    flag ? 'bi bi-arrow-down' : 'bi bi-arrow-right',
+                    'tw-text-sm tw-drop-shadow-glow',
+                  ]"
+                ></i>
+              </div>
+            </div>
+
+            <!-- 3. 新增节点下拉选择器（始终处于链路最后） -->
+            <div class="tw-flex tw-items-center tw-shrink-0">
+              <el-select
+                v-model="selectedNewNode"
+                filterable
+                placeholder="+ 添加节点"
+                class="tw-w-36 custom-select-add-node"
+                @change="handleAddNode"
+              >
+                <el-option
+                  v-for="item in apps"
+                  :key="item.value"
+                  :label="item.label || item"
+                  :value="item.value || item"
+                />
+              </el-select>
+            </div>
           </div>
         </div>
+
+        <!-- 编辑关联关系按钮 -->
+        <el-button
+          text
+          :title="relationEditor.tips"
+          v-if="!flag"
+          @click="startEditRelation()"
+        >
+          <el-icon><edit-pen /></el-icon>
+        </el-button>
       </div>
 
       <div
@@ -410,6 +523,10 @@ export default {
       showAppConfig: false,
       agentResults: [],
       editingApps: [],
+      isExpanded: true,
+      selectedNewNode: {
+        value: "",
+      },
     };
   },
   watch: {
@@ -483,6 +600,28 @@ export default {
     },
     switchEditMode() {
       this.isViewer = false;
+    },
+    handleAddNode(val) {
+      if (!val) return;
+      this.accountData.workflow.push(val);
+      this.selectedNewNode.value = ""; // 清空选择框以便下一次添加
+
+      this.initStepData();
+    },
+    removeNode(index) {
+      this.accountData.workflow.splice(index, 1);
+      this.initStepData();
+    },
+    moveNode(index, step) {
+      const targetIndex = index + step;
+      if (targetIndex < 0 || targetIndex >= this.accountData.workflow.length)
+        return;
+
+      // 交换位置
+      const temp = this.accountData.workflow[index];
+      this.accountData.workflow[index] = this.accountData.workflow[targetIndex];
+      this.accountData.workflow[targetIndex] = temp;
+      this.initStepData();
     },
     getStepStuts(index) {
       let ret = "";
@@ -642,7 +781,7 @@ export default {
           temp.push(item);
           this.stepData.push({
             appId: item,
-            currentNodeUrl: this.getUrl(item),
+            currentNodeUrl: this.getUrl(item, i + 1),
             resultUrl: this.isViewer
               ? this.agentResults[i + 1]
                 ? this.agentResults[i + 1].resultUrl
@@ -654,7 +793,7 @@ export default {
       this.activeStepIndex = 0;
       this.stepData.unshift({
         appId: this.accountData.appId,
-        currentNodeUrl: this.getUrl(),
+        currentNodeUrl: this.getUrl(this.accountData.appId, 0),
         resultUrl: this.isViewer
           ? this.agentResults[0]
             ? this.agentResults[0].resultUrl
@@ -717,13 +856,19 @@ export default {
       const item = this.apps.find((a) => a.value === val);
       return item ? item.label : val.slice(0, 5);
     },
-    getUrl(id) {
+    getUrl(id, index) {
       let params = {
         headerHidden: true,
         workflow: this.accountData.workflow.join(","),
         id: id || this.accountData.appId,
         solo: true,
       };
+
+      params.index =
+        index !== undefined
+          ? index
+          : this.accountData.workflow.indexOf(params.id) + 1 || 0;
+
       let url = webCpu.documentPrefix;
       return typeof WebTool !== "undefined"
         ? WebTool.attachParams(url, params)
@@ -740,19 +885,16 @@ export default {
 
           let params = WebTool.urlQuery(currentUrl);
 
-          params.workflow = params.workflow || "";
-          let workflow = params.workflow.split(",");
-
-          let id = params.id;
           let inputItem = params.inputItem;
           let dataId = params.dataId;
-          let stepIndex = workflow.indexOf(id) + 1;
+
+          let stepIndex = Number(params.index) + 1;
 
           this.activeStepIndex = stepIndex;
 
           console.log("当前 URL: ", currentUrl, "stepIndex: ", stepIndex);
 
-          if (stepIndex < this.stepData.length) {
+          if (stepIndex < this.stepData.length + 1) {
             this.activeStepIndex = stepIndex;
             let node = this.stepData[stepIndex - 1] || {};
             let url = webCpu.documentPrefix;
@@ -760,34 +902,34 @@ export default {
               params.id = node.appId;
               params.dataId = inputItem;
               delete params.inputItem;
+              params.index = stepIndex - 1;
               node.resultUrl = WebTool.attachParams(url, params);
             } else if (dataId) {
-              params.id = this.stepData[stepIndex].appId;
-              this.stepData[stepIndex].resultUrl = WebTool.attachParams(
+              params.id = this.stepData[stepIndex - 1].appId;
+              params.index = stepIndex - 1;
+              this.stepData[stepIndex - 1].resultUrl = WebTool.attachParams(
                 url,
                 params
               );
             }
-
+             let tParams = WebTool.urlQuery(currentUrl);
             if (inputItem) {
               this.updateInputData(stepIndex - 1, inputItem);
+              tParams.index = stepIndex;
+              tParams.id = this.stepData[stepIndex].appId;
               if (this.stepData[stepIndex].inputData) {
                 let tParams = WebTool.urlQuery(currentUrl);
                 tParams.inputData = JSON.stringify(
                   this.stepData[stepIndex].inputData
                 );
                 delete tParams.inputItem;
-
                 console.log(
                   "this.stepData[stepIndex].inputData: ",
                   this.stepData[stepIndex].inputData
                 );
-
-                currentUrl = WebTool.attachParams(
-                  webCpu.documentPrefix,
-                  tParams
-                );
               }
+
+              currentUrl = WebTool.attachParams(webCpu.documentPrefix, tParams);
               iframe.src = currentUrl;
             }
 

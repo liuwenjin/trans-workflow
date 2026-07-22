@@ -471,6 +471,7 @@ export default {
         aigcInterface.getAppData(
           node.id,
           (data) => {
+            console.log("Fetched data for node:", node.id, data);
             let keys = Object.keys(data);
             if (typeof callback === "function") callback(keys);
           },
