@@ -308,39 +308,13 @@
       }
     }
   </style>
-  <!-- GA -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-K117F271PB"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
-    gtag('js', new Date());
-    gtag('config', 'G-K117F271PB');
-
-    (function () {
-      function track(e, p = {}) { gtag('event', e, { page_title: document.title, page_location: location.href, ...p }); }
-      window.$track = track;
-      window.addEventListener('load', () => track('page_view_custom'));
-      document.addEventListener('click', function (e) {
-        const t = e.target.closest('.agent-card');
-        if (t) track('module_click', { module_name: t.dataset.name || t.innerText || 'unknown' });
-      });
-      ['click', 'mousemove', 'keydown', 'touchstart'].forEach(evt => {
-        window.addEventListener(evt, function handler() {
-          track('interaction', { type: evt });
-          window.removeEventListener(evt, handler);
-        });
-      });
-      setTimeout(() => track('stay_10s'), 10000);
-      setTimeout(() => track('stay_30s'), 30000);
-      window.addEventListener('beforeunload', () => track('page_exit'));
-      const params = new URLSearchParams(location.search);
-      const utm = {};
-      ['utm_source', 'utm_medium', 'utm_campaign'].forEach(k => {
-        const v = params.get(k); if (v) utm[k] = v;
-      });
-      if (utm.utm_source || utm.utm_campaign) track('traffic_source', utm);
-    })();
-  </script>
+  <script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "xejk2rx33f");
+</script>
 
   <script src="https://cdn.tailwindcss.com"></script>
 

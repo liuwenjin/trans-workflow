@@ -28,7 +28,7 @@
 
 > 💡 **核心公式：**
 > 
-> $$\text{Workflow} = \text{Agent 协作链} + \text{过程完全透明} + \text{全链路人工干预 (Human-in-the-Loop)}$$
+> Trans-Workflow = Agent 协作链 + 过程完全透明 + 全链路人工干预 (Human-in-the-Loop)
 > 
 > 
 
