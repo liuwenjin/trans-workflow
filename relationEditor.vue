@@ -1,37 +1,49 @@
 <template>
-  <div id="rootContainerItem" class="tw-relative tw-p-6">
-    <el-card class="tw-rounded-2xl tw-shadow-lg tw-border-0 tw-bg-white">
-      <div class="tw-mb-6 tw-flex tw-items-center tw-justify-between">
-        <div class="tw-flex tw-items-center tw-gap-3">
+  <div id="rootContainerItem" class="tw-relative tw-w-full tw-min-h-screen tw-bg-gradient-to-b tw-from-slate-50 tw-via-slate-100/60 tw-to-slate-50 tw-py-8 tw-px-6 sm:tw-px-12 tw-font-sans tw-antialiased tw-text-slate-900">
+    <!-- 背景柔和渐变光斑点缀 -->
+    <div class="tw-pointer-events-none tw-absolute tw-top-12 tw-left-1/2 -tw-translate-x-1/2 tw-w-[800px] tw-h-[400px] tw-bg-gradient-to-tr tw-from-indigo-100/40 tw-via-sky-100/30 tw-to-slate-100/0 tw-blur-3xl tw-rounded-full tw-opacity-70"></div>
+
+    <el-card class="tw-relative tw-z-10 tw-max-w-6xl tw-mx-auto tw-rounded-[24px] tw-border tw-border-slate-200/80 tw-bg-white/70 tw-backdrop-blur-xl tw-shadow-[0_20px_50px_rgba(15,23,42,0.04)] tw-transition-all tw-duration-500 hover:tw-shadow-[0_30px_70px_rgba(15,23,42,0.07)] tw-overflow-visible">
+      <!-- Card Header / Hero Area -->
+      <div class="tw-mb-10 tw-flex tw-flex-col md:tw-flex-row md:tw-items-center tw-justify-between tw-gap-6 tw-p-2">
+        <div class="tw-flex tw-items-center tw-gap-4">
           <div
-            class="tw-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-lg tw-bg-blue-main tw-text-white"
+            class="tw-flex tw-h-12 tw-w-12 tw-items-center tw-justify-center tw-rounded-2xl tw-bg-slate-900 tw-text-white tw-shadow-md tw-shadow-slate-900/10 tw-transition-transform tw-duration-300 hover:tw-scale-105"
           >
-            <i class="bi bi-diagram-3 tw-text-lg"></i>
+            <i class="bi bi-diagram-3 tw-text-xl"></i>
           </div>
-          <h2
-            class="tw-text-lg tw-font-semibold tw-leading-relaxed tw-text-slate-900"
-          >
-            Agent 依赖关系编排器
-          </h2>
+          <div>
+            <h2
+              class="tw-text-2xl sm:tw-text-3xl tw-font-bold tw-tracking-tight tw-leading-snug tw-text-slate-900"
+            >
+              Agent 依赖关系编排器
+            </h2>
+            <p class="tw-text-sm tw-text-slate-500 tw-mt-1 tw-font-normal">
+              定义并协同编排智能体节点间的数据流与控制链路
+            </p>
+          </div>
         </div>
         <el-button
           type="primary"
-          size="small"
+          size="large"
+          class="custom-primary-btn tw-rounded-xl tw-px-5 tw-py-2.5 tw-font-medium tw-shadow-sm tw-transition-all tw-duration-300"
           @click="showAddLineDialog = true"
           :disabled="isAddLineDisabled"
         >
-          <i class="bi bi-plus-lg tw-mr-1"></i>
+          <i class="bi bi-plus-lg tw-mr-1.5 tw-text-sm"></i>
           新增连线
         </el-button>
       </div>
 
+      <!-- Canvas Area -->
       <div
-        class="tw-relative tw-overflow-x-auto tw-bg-slate-50 tw-rounded-xl tw-p-6 tw-pb-24 canvas-container"
-        style="min-height: 320px"
+        ref="canvasContainer"
+        class="tw-relative tw-overflow-x-auto tw-bg-slate-900/[0.02] tw-border tw-border-slate-200/60 tw-rounded-[20px] tw-p-8 tw-pb-28 canvas-container tw-transition-all"
+        style="min-height: 380px"
       >
         <svg
           ref="svgCanvas"
-          class="tw-absolute tw-top-0 tw-left-0 tw-pointer-events-none tw-z-10"
+          class="tw-absolute tw-top-0 tw-left-0 tw-pointer-events-none tw-z-10 tw-w-full tw-h-full"
           :width="svgWidth"
           :height="svgHeight"
         >
@@ -42,8 +54,8 @@
             :y1="line.y1"
             :x2="line.x2"
             :y2="line.y2"
-            class="tw-stroke-blue-400"
-            style="stroke-width: 2px"
+            class="tw-stroke-slate-300"
+            style="stroke-width: 2px; stroke-dasharray: 4 3;"
             marker-end="url(#arrowblue)"
           />
 
@@ -56,15 +68,15 @@
               }
             "
             :d="line.path"
-            stroke-dasharray="5,5"
-            class="tw-stroke-purple-main tw-stroke-2 tw-fill-none tw-cursor-pointer tw-pointer-events-auto tw-transition-all extra-path-dashed"
+            stroke-dasharray="6,6"
+            class="tw-stroke-indigo-400 tw-stroke-2 tw-fill-none tw-cursor-pointer tw-pointer-events-auto tw-transition-all tw-duration-300 extra-path-dashed"
             marker-end="url(#arrowpurple)"
             @click="selectExtraLine(idx)"
             @mouseenter="hoveredLineIdx = idx"
             @mouseleave="hoveredLineIdx = -1"
             :class="{
-              'tw-stroke-orange-500': selectedLineIdx === idx,
-              'tw-stroke-purple-700 tw-stroke-[3px]':
+              'tw-stroke-amber-500 tw-stroke-[2.5px]': selectedLineIdx === idx,
+              'tw-stroke-indigo-600 tw-stroke-[2.5px]':
                 hoveredLineIdx === idx && selectedLineIdx !== idx,
             }"
           />
@@ -72,32 +84,33 @@
           <defs>
             <marker
               id="arrowblue"
-              markerWidth="10"
-              markerHeight="10"
-              refX="8"
-              refY="3"
+              markerWidth="8"
+              markerHeight="8"
+              refX="7"
+              refY="3.5"
               orient="auto"
               markerUnits="strokeWidth"
             >
-              <path d="M0,0 L0,6 L9,3 z" fill="#60a5fa" />
+              <path d="M0,0 L0,7 L7,3.5 z" fill="#94a3b8" />
             </marker>
             <marker
               id="arrowpurple"
-              markerWidth="10"
-              markerHeight="10"
-              refX="8"
-              refY="3"
+              markerWidth="8"
+              markerHeight="8"
+              refX="7"
+              refY="3.5"
               orient="auto"
               markerUnits="strokeWidth"
             >
-              <path d="M0,0 L0,6 L9,3 z" fill="#a855f7" />
+              <path d="M0,0 L0,7 L7,3.5 z" fill="#818cf8" />
             </marker>
           </defs>
         </svg>
 
+        <!-- Nodes Display Area -->
         <div
-          class="tw-relative tw-flex tw-gap-24 tw-justify-start tw-items-center tw-z-20"
-          style="min-height: 180px; padding: 20px 0"
+          class="tw-relative tw-flex tw-gap-28 tw-justify-start tw-items-center tw-z-20"
+          style="min-height: 200px; padding: 24px 0"
         >
           <div
             v-for="(node, idx) in nodes"
@@ -107,23 +120,23 @@
                 if (el) nodeRefs[idx] = el;
               }
             "
-            class="tw-flex tw-flex-col tw-items-center tw-flex-shrink-0"
+            class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-flex-shrink-0"
           >
             <div
-              class="tw-rounded-lg tw-border-2 tw-border-blue-300 tw-bg-white tw-shadow-md tw-p-4 tw-w-32 tw-text-center tw-transition-all"
+              class="node-card tw-rounded-2xl tw-border tw-border-slate-200/90 tw-bg-white/90 tw-backdrop-blur-md tw-shadow-[0_4px_20px_rgba(0,0,0,0.03)] tw-p-5 tw-w-40 tw-text-center tw-transition-all tw-duration-300"
               :class="{
-                'tw-border-blue-500 tw-shadow-lg': hoveredNodeIdx === idx,
+                'tw-border-indigo-500/80 tw-shadow-[0_12px_30px_rgba(99,102,241,0.12)] tw-ring-2 tw-ring-indigo-500/10': hoveredNodeIdx === idx,
               }"
               @mouseenter="hoveredNodeIdx = idx"
               @mouseleave="hoveredNodeIdx = -1"
             >
               <div
-                class="tw-text-xs tw-font-semibold tw-leading-relaxed tw-text-slate-500 tw-mb-1"
+                class="tw-text-[11px] tw-font-semibold tw-tracking-wider tw-uppercase tw-text-slate-400 tw-mb-1.5"
               >
                 {{ node.id.slice(0, 5) }}#{{ idx }}
               </div>
               <div
-                class="tw-text-sm tw-font-medium tw-leading-relaxed tw-text-slate-900"
+                class="tw-text-base tw-font-semibold tw-leading-relaxed tw-text-slate-800"
               >
                 {{ node.name }}
               </div>
@@ -131,6 +144,7 @@
           </div>
         </div>
 
+        <!-- Serial Line Button Menu -->
         <div
           v-for="(line, idx) in serialLines"
           :key="`serial-btn-${idx}`"
@@ -141,17 +155,18 @@
             type="info"
             size="small"
             circle
-            class="tw-shadow tw-bg-white tw-border-blue-300 tw-text-blue-500 hover:tw-bg-blue-50 tw-w-6 tw-h-6 tw-flex tw-items-center tw-justify-center"
+            class="tw-shadow-sm tw-bg-white tw-border-slate-200 tw-text-slate-600 hover:tw-text-slate-900 hover:tw-bg-slate-50 tw-w-7 tw-h-7 tw-flex tw-items-center tw-justify-center tw-transition-all tw-duration-200 hover:tw-scale-110"
             @click.stop="editLineProperty(line.rawIndex)"
           >
             <i class="bi bi-pencil-square tw-text-xs"></i>
           </el-button>
         </div>
 
+        <!-- Extra Line Button & Menu -->
         <div
           v-for="(line, idx) in extraLines"
           :key="`menu-${idx}`"
-          class="tw-absolute tw-pointer-events-auto tw-flex tw-flex-col tw-items-center tw-transition-transform"
+          class="tw-absolute tw-pointer-events-auto tw-flex tw-flex-col tw-items-center tw-transition-transform tw-duration-200"
           :style="getLineMenuPosition(idx)"
           @mouseenter="hoveredLineIdx = idx"
           @mouseleave="hoveredLineIdx = -1"
@@ -162,57 +177,62 @@
             v-if="nodes[line.from] && nodes[line.to]"
             circle
             @click.stop="toggleLineMenu(idx)"
-            class="tw-shadow-md tw-flex-shrink-0 tw-border-2 tw-transition-all"
+            class="tw-shadow-md tw-flex-shrink-0 tw-border tw-transition-all tw-duration-300"
             :class="[
               selectedLineIdx === idx
-                ? 'tw-border-orange-500 tw-bg-orange-500'
+                ? 'tw-border-amber-500 tw-bg-amber-500 tw-text-white'
                 : hoveredLineIdx === idx
-                ? 'tw-border-purple-700 tw-scale-110'
-                : 'tw-border-purple-300',
+                ? 'tw-border-indigo-600 tw-scale-110 tw-bg-indigo-50 tw-text-indigo-600'
+                : 'tw-border-slate-200 tw-bg-white tw-text-indigo-500',
               'line-menu-btn',
             ]"
             :title="`连线 ${nodes[line.from].id}#${nodes[line.from].name} → ${
               nodes[line.to].id
             }#${nodes[line.to].name}`"
           >
-            <span class="tw-text-[10px] tw-font-bold"
+            <span class="tw-text-[11px] tw-font-semibold"
               >{{ line.from }}-{{ line.to }}</span
             >
           </el-button>
 
-          <div
-            v-if="expandedLineMenuIdx === idx"
-            class="tw-absolute tw-bottom-full tw-mb-2 tw-flex tw-flex-col tw-bg-white tw-rounded-lg tw-shadow-lg tw-border tw-border-slate-200 tw-overflow-hidden tw-z-40"
-          >
-            <button
-              @click="editLineProperty(line.rawIndex)"
-              class="tw-px-3 tw-py-2 tw-text-sm tw-text-slate-700 tw-hover:bg-slate-50 tw-transition-all tw-flex tw-items-center tw-gap-2 tw-whitespace-nowrap"
+          <!-- Expanded Menu Popup -->
+          <transition name="menu-fade">
+            <div
+              v-if="expandedLineMenuIdx === idx"
+              class="tw-absolute tw-bottom-full tw-mb-3 tw-flex tw-flex-col tw-bg-white/95 tw-backdrop-blur-md tw-rounded-xl tw-shadow-[0_10px_30px_rgba(0,0,0,0.08)] tw-border tw-border-slate-100 tw-p-1 tw-z-40"
             >
-              <i class="bi bi-pencil-square"></i>
-              编辑
-            </button>
-            <button
-              @click="deleteExtraLine(line.rawIndex)"
-              class="tw-px-3 tw-py-2 tw-text-sm tw-text-red-600 tw-hover:bg-red-50 tw-transition-all tw-flex tw-items-center tw-gap-2 tw-whitespace-nowrap"
-            >
-              <i class="bi bi-trash"></i>
-              删除
-            </button>
-          </div>
+              <button
+                @click="editLineProperty(line.rawIndex)"
+                class="tw-px-3.5 tw-py-2 tw-text-xs tw-font-medium tw-text-slate-700 hover:tw-bg-slate-50 hover:tw-text-slate-900 tw-rounded-lg tw-transition-colors tw-flex tw-items-center tw-gap-2 tw-whitespace-nowrap"
+              >
+                <i class="bi bi-pencil-square tw-text-slate-400"></i>
+                编辑
+              </button>
+              <button
+                @click="deleteExtraLine(line.rawIndex)"
+                class="tw-px-3.5 tw-py-2 tw-text-xs tw-font-medium tw-text-rose-600 hover:tw-bg-rose-50/80 tw-rounded-lg tw-transition-colors tw-flex tw-items-center tw-gap-2 tw-whitespace-nowrap"
+              >
+                <i class="bi bi-trash tw-text-rose-500"></i>
+                删除
+              </button>
+            </div>
+          </transition>
         </div>
       </div>
     </el-card>
 
+    <!-- Dialog: Add Line -->
     <el-dialog
       v-model="showAddLineDialog"
       title="新增连线"
-      width="400px"
+      width="440px"
+      custom-class="premium-dialog"
       @close="resetLineForm"
     >
-      <div class="tw-space-y-4">
+      <div class="tw-space-y-5 tw-py-2">
         <div>
           <label
-            class="tw-block tw-text-sm tw-font-medium tw-leading-relaxed tw-text-slate-900 tw-mb-2"
+            class="tw-block tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wider tw-text-slate-500 tw-mb-2"
             >起点节点</label
           >
           <el-select
@@ -234,7 +254,7 @@
         </div>
         <div>
           <label
-            class="tw-block tw-text-sm tw-font-medium tw-leading-relaxed tw-text-slate-900 tw-mb-2"
+            class="tw-block tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wider tw-text-slate-500 tw-mb-2"
             >终点节点</label
           >
           <el-select
@@ -256,7 +276,7 @@
         </div>
         <div>
           <label
-            class="tw-block tw-text-sm tw-font-medium tw-leading-relaxed tw-text-slate-900 tw-mb-2"
+            class="tw-block tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wider tw-text-slate-500 tw-mb-2"
             >连线属性</label
           >
           <el-select
@@ -277,7 +297,7 @@
         </div>
         <div>
           <label
-            class="tw-block tw-text-sm tw-font-medium tw-leading-relaxed tw-text-slate-900 tw-mb-2"
+            class="tw-block tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wider tw-text-slate-500 tw-mb-2"
             >备注</label
           >
           <el-input
@@ -289,27 +309,29 @@
         </div>
       </div>
       <template #footer>
-        <div class="tw-flex tw-gap-2 tw-justify-end">
-          <el-button @click="showAddLineDialog = false">取消</el-button>
-          <el-button type="primary" @click="confirmAddLine">添加</el-button>
+        <div class="tw-flex tw-gap-3 tw-justify-end tw-pt-2">
+          <el-button class="tw-rounded-xl" @click="showAddLineDialog = false">取消</el-button>
+          <el-button type="primary" class="custom-primary-btn tw-rounded-xl" @click="confirmAddLine">添加</el-button>
         </div>
       </template>
     </el-dialog>
 
+    <!-- Dialog: Edit Line -->
     <el-dialog
       v-model="showEditLineDialog"
       title="编辑连线属性"
-      width="400px"
+      width="440px"
+      custom-class="premium-dialog"
       @close="resetLineForm"
     >
-      <div class="tw-space-y-4">
+      <div class="tw-space-y-5 tw-py-2">
         <div v-if="lineForm.from !== null && lineForm.to !== null">
           <label
-            class="tw-block tw-text-sm tw-font-medium tw-leading-relaxed tw-text-slate-900 tw-mb-2"
+            class="tw-block tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wider tw-text-slate-500 tw-mb-2"
             >连线路径</label
           >
           <div
-            class="tw-rounded tw-bg-slate-50 tw-px-3 tw-py-2 tw-text-sm tw-leading-relaxed tw-text-slate-700"
+            class="tw-rounded-xl tw-bg-slate-100/70 tw-border tw-border-slate-200/60 tw-px-3.5 tw-py-2.5 tw-text-xs tw-font-medium tw-text-slate-700"
           >
             {{ nodes[lineForm.from].id.slice(0, 5) }}#{{ lineForm.from }}[{{
               nodes[lineForm.from].name
@@ -320,7 +342,7 @@
         </div>
         <div>
           <label
-            class="tw-block tw-text-sm tw-font-medium tw-leading-relaxed tw-text-slate-900 tw-mb-2"
+            class="tw-block tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wider tw-text-slate-500 tw-mb-2"
             >连线属性</label
           >
           <el-select
@@ -346,14 +368,14 @@
             ></el-option>
           </el-select>
           <span
-            style="font-size: 12px; margin-top: 5px; color: #888"
+            style="font-size: 12px; margin-top: 6px; color: #94a3b8; display: block;"
             v-if="lineForm.property.indexOf('(none)') !== -1"
             >当前相邻节点不传递数据</span
           >
         </div>
         <div>
           <label
-            class="tw-block tw-text-sm tw-font-medium tw-leading-relaxed tw-text-slate-900 tw-mb-2"
+            class="tw-block tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wider tw-text-slate-500 tw-mb-2"
             >备注</label
           >
           <el-input
@@ -365,9 +387,9 @@
         </div>
       </div>
       <template #footer>
-        <div class="tw-flex tw-gap-2 tw-justify-end">
-          <el-button @click="showEditLineDialog = false">取消</el-button>
-          <el-button type="primary" @click="confirmEditLine">更新</el-button>
+        <div class="tw-flex tw-gap-3 tw-justify-end tw-pt-2">
+          <el-button class="tw-rounded-xl" @click="showEditLineDialog = false">取消</el-button>
+          <el-button type="primary" class="custom-primary-btn tw-rounded-xl" @click="confirmEditLine">更新</el-button>
         </div>
       </template>
     </el-dialog>
@@ -380,11 +402,10 @@ export default {
   data() {
     return {
       nodes: [
-        { id: "agent-1", name: "数据采集" },
-        { id: "agent-2", name: "数据清洗" },
-        { id: "agent-3", name: "特征工程" },
+        { id: "agent-1", name: "题意理解" },
+        { id: "agent-2", name: "作图规划" },
+        { id: "agent-3", name: "绘图脚本" },
       ],
-      // 统一的连线数据中心，合并管理相邻和非相邻连线
       allLines: [],
       showAddLineDialog: false,
       showEditLineDialog: false,
@@ -395,7 +416,7 @@ export default {
         property: [],
         remark: "",
       },
-      editingLineRawIdx: -1, // 正在编辑的连线在 allLines 中的真实索引
+      editingLineRawIdx: -1,
       selectedLineIdx: -1,
       hoveredNodeIdx: -1,
       hoveredLineIdx: -1,
@@ -405,10 +426,10 @@ export default {
       nodePositions: [],
       extraLineRefs: {},
       nodeRefs: {},
+      resizeObserver: null,
     };
   },
   computed: {
-    // 过滤出相邻节点的基础连线，计算坐标用于 SVG 直线渲染
     serialLines() {
       const lines = [];
       if (this.nodePositions.length < this.nodes.length) return lines;
@@ -419,12 +440,14 @@ export default {
           const pos2 = this.nodePositions[line.to];
           if (pos1 && pos2 && this.nodes[line.from] && this.nodes[line.to]) {
             lines.push({
-              rawIndex: index, // 保留其在全量数组中的真实索引
+              rawIndex: index,
               from: line.from,
               to: line.to,
-              x1: pos1.x + pos1.width + 2,
+              // 起点：前一节点卡片右侧边缘中点
+              x1: pos1.x + pos1.width,
               y1: pos1.y + pos1.height / 2,
-              x2: pos2.x - 2,
+              // 终点：后一节点卡片左侧边缘中点，稍微往左留出 1px 紧贴边缘
+              x2: pos2.x - 1,
               y2: pos2.y + pos2.height / 2,
             });
           }
@@ -432,14 +455,13 @@ export default {
       });
       return lines;
     },
-    // 过滤出跨节点的额外连线，计算路径用于 SVG 贝塞尔曲线渲染
     extraLines() {
       const lines = [];
       this.allLines.forEach((line, index) => {
         if (line.to - line.from > 1 && this.nodes[line.from] && this.nodes[line.to]) {
           lines.push({
             ...line,
-            rawIndex: index, // 保留其在全量数组中的真实索引
+            rawIndex: index,
             path: this.getExtraLinePath(line),
           });
         }
@@ -493,7 +515,7 @@ export default {
 
       return {
         left: `${midX}px`,
-        top: `${midY - 14}px`,
+        top: `${midY}px`,
         transform: "translate(-50%, -50%)",
         zIndex: 35,
       };
@@ -526,7 +548,7 @@ export default {
     },
     isNodeDisabled(idx) {
       if (this.lineForm.from === null) return false;
-      if (idx - this.lineForm.from === 1) return true; // 相邻节点不可再次手动添加
+      if (idx - this.lineForm.from === 1) return true;
       return (
         idx <= this.lineForm.from ||
         this.allLines.some(
@@ -536,6 +558,10 @@ export default {
     },
     calculateNodePositions() {
       const action = () => {
+        const container = this.$refs.canvasContainer;
+        if (!container) return;
+
+        const containerRect = container.getBoundingClientRect();
         const newPositions = [];
         let valid = true;
 
@@ -543,17 +569,13 @@ export default {
           const el = this.nodeRefs[i];
           if (el) {
             const rect = el.getBoundingClientRect();
-            const svgRect = this.$refs.svgCanvas?.getBoundingClientRect();
-            if (svgRect) {
-              newPositions.push({
-                x: rect.left - svgRect.left,
-                y: rect.top - svgRect.top,
-                width: rect.width,
-                height: rect.height,
-              });
-            } else {
-              valid = false;
-            }
+            // 精确计算相对 container 绝对坐标
+            newPositions.push({
+              x: rect.left - containerRect.left + container.scrollLeft,
+              y: rect.top - containerRect.top + container.scrollTop,
+              width: rect.width,
+              height: rect.height,
+            });
           } else {
             valid = false;
           }
@@ -565,11 +587,11 @@ export default {
 
       this.$nextTick(() => {
         action();
-        setTimeout(action, 60);
+        requestAnimationFrame(action);
       });
     },
     updateSvgDimensions() {
-      const container = this.$refs.svgCanvas?.parentElement;
+      const container = this.$refs.canvasContainer;
       if (container) {
         this.svgWidth = container.scrollWidth;
         this.svgHeight = Math.max(360, container.scrollHeight);
@@ -589,7 +611,7 @@ export default {
 
       const x1 = from.x + from.width;
       const y1 = from.y + from.height / 2;
-      const x2 = to.x;
+      const x2 = to.x - 1;
       const y2 = to.y + to.height / 2;
 
       const distance = Math.abs(x2 - x1);
@@ -601,7 +623,6 @@ export default {
         x2 - controlOffset
       } ${y2 + curveHeight}, ${x2} ${y2}`;
     },
-    // 合并后的统一编辑函数（支持基础连线和跨节点连线）
     editLineProperty(rawIndex) {
       const line = this.allLines[rawIndex];
       if (!line) return;
@@ -621,12 +642,10 @@ export default {
       this.showEditLineDialog = true;
       this.expandedLineMenuIdx = -1;
 
-      // 依据起点的 index 获取异步下拉配置项数据
       this.getLineOptions(line.from, (arr) => {
         this.currentOptions = arr;
       });
     },
-    // 确认更新属性逻辑
     confirmEditLine() {
       if (this.editingLineRawIdx !== -1) {
         const targetLine = this.allLines[this.editingLineRawIdx];
@@ -639,7 +658,7 @@ export default {
         this.resetLineForm();
         this.calculateNodePositions();
         console.log("this.allLines: ", this.allLines);
-        this.$message.success("关系更新成功。")
+        this.$message.success("关系更新成功。");
       }
     },
     selectExtraLine(idx) {
@@ -655,7 +674,7 @@ export default {
           this.allLines.splice(rawIndex, 1);
           this.selectedLineIdx = -1;
           this.expandedLineMenuIdx = -1;
-          this.extraLineRefs = {}; // 重置引用触发重算
+          this.extraLineRefs = {};
           this.calculateNodePositions();
           console.log("this.allLines (After Delete): ", this.allLines);
         })
@@ -709,7 +728,6 @@ export default {
     },
   },
   mounted() {
-    // 1. 生成默认的相邻节点基础连线
     const baseLines = [];
     for (let i = 0; i < this.nodes.length - 1; i++) {
       baseLines.push({
@@ -720,12 +738,7 @@ export default {
       });
     }
 
-    // 2. 将已有数据（假设从外部、本地存储或组件现有变量传入）与基础连线合并取并集
-    // 这里的 this.allLines 可以是父组件传入的 prop，也可以是本地已有的持久化数据
     const existingLines = this.allLines || [];
-
-    // 3. 以 from 和 to 为唯一标识进行去重合并
-    // 策略：如果 existingLines 中已存在该路径，则优先使用已有的（保留自定义属性）；否则使用基础连线
     const mergedLines = [...existingLines];
 
     baseLines.forEach((baseLine) => {
@@ -737,84 +750,67 @@ export default {
       }
     });
 
-    // 4. 对合并后的连线按照路径先后顺序做个微型排序（可选，方便维护和 debug）
     mergedLines.sort((a, b) => {
       if (a.from === b.from) return a.to - b.to;
       return a.from - b.from;
     });
 
-    // 5. 最终赋值
     this.allLines = mergedLines;
-
-    // 6. 触发布局计算
     this.calculateNodePositions();
+
+    // 监听窗口与容器尺寸变化，动态纠正坐标
     window.addEventListener("resize", this.calculateNodePositions);
-    console.log("Union merged allLines: ", this.allLines);
+    if (this.$refs.canvasContainer) {
+      this.resizeObserver = new ResizeObserver(() => {
+        this.calculateNodePositions();
+      });
+      this.resizeObserver.observe(this.$refs.canvasContainer);
+    }
   },
   beforeUnmount() {
     window.removeEventListener("resize", this.calculateNodePositions);
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
   },
 };
 </script>
 
 <style scoped>
-.tw-bg-blue-main {
-  background-color: rgba(59, 130, 246, 0.1);
-}
-.tw-stroke-blue-400 {
-  stroke: #60a5fa !important;
-}
-.tw-stroke-purple-main {
-  stroke: #a855f7;
-}
-.tw-stroke-purple-700 {
-  stroke: #6b21a8;
-}
-.tw-stroke-orange-500 {
-  stroke: #f97316;
-}
-.tw-border-blue-300 {
-  border-color: #93c5fd;
-}
-.tw-border-blue-500 {
-  border-color: #3b82f6;
-}
-.tw-border-purple-300 {
-  border-color: #d8b4fe;
-}
-.tw-border-purple-700 {
-  border-color: #6b21a8;
-}
-.tw-border-orange-500 {
-  border-color: #ea580c;
-}
-.tw-bg-orange-500 {
-  background-color: #f97316 !important;
+.custom-primary-btn {
+  background-color: #0f172a !important;
+  border-color: #0f172a !important;
   color: #ffffff !important;
 }
-.tw-bg-blue-50 {
-  background-color: #eff6ff;
+.custom-primary-btn:hover {
+  background-color: #1e293b !important;
+  border-color: #1e293b !important;
 }
-.tw-cursor-pointer {
-  cursor: pointer;
-}
-.extra-path-dashed {
-  transition: stroke 0.3s, stroke-width 0.3s;
-}
+
 .line-menu-btn {
-  width: 28px !important;
-  height: 28px !important;
+  width: 30px !important;
+  height: 30px !important;
   padding: 0 !important;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #ffffff;
-  color: #a855f7;
 }
-.line-menu-btn:hover {
-  background-color: #f3e8ff;
-}
+
 .canvas-container {
   position: relative;
+}
+
+.extra-path-dashed {
+  transition: stroke 0.3s cubic-bezier(0.16, 1, 0.3, 1), stroke-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.menu-fade-enter-active,
+.menu-fade-leave-active {
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.menu-fade-enter-from,
+.menu-fade-leave-to {
+  opacity: 0;
+  transform: translateY(6px) scale(0.96);
 }
 </style>
