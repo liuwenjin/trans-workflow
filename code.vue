@@ -50,7 +50,7 @@
             <template #dropdown>
               <el-dropdown-menu data-edit-id="44">
                 <el-dropdown-item @click="handleEditingDialog" data-edit-id="46"
-                  >修改 Skill 列表</el-dropdown-item
+                  >修改可选 Skill 列表</el-dropdown-item
                 >
                 <slot v-for="(item, index) in apps" :key="item.label">
                   <el-dropdown-item
@@ -511,7 +511,7 @@ export default {
       stepData: [],
       currentNodeUrl: "",
       relationEditor: {
-        tips: "编辑 Skill 依赖关系",
+        tips: "编辑 Skill 节点依赖关系",
         url: "",
         className: "ElementVueItem",
       },
