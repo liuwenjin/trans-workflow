@@ -42,14 +42,55 @@ const triggerPackDownload = async (btnElement, name) => {
   }
 };
 
-// 移动端菜单控制
-const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-const mobileNavPanel = document.getElementById('mobileNavPanel');
-if (mobileMenuBtn && mobileNavPanel) {
-  mobileMenuBtn.addEventListener('click', () => {
-    mobileNavPanel.classList.toggle('tw-hidden');
+document.addEventListener('DOMContentLoaded', () => {
+  const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+  const mobileNavPanel = document.getElementById('mobileNavPanel');
+
+  if (!mobileMenuBtn || !mobileNavPanel) return;
+
+  // 切换菜单显示/隐藏
+  const toggleMenu = (show) => {
+    const isHidden = mobileNavPanel.classList.contains('tw-hidden');
+    const forceHide = typeof show === 'boolean' ? !show : !isHidden;
+
+    if (forceHide) {
+      // 隐藏面板：同时加上 tw-hidden 和 md:tw-hidden
+      mobileNavPanel.classList.add('tw-hidden', 'md:tw-hidden');
+      mobileMenuBtn.setAttribute('aria-expanded', 'false');
+    } else {
+      // 显示面板：同时移除 tw-hidden 和 md:tw-hidden
+      mobileNavPanel.classList.remove('tw-hidden', 'md:tw-hidden');
+      mobileMenuBtn.setAttribute('aria-expanded', 'true');
+    }
+  };
+
+  // 1. 点击汉堡按钮切换
+  mobileMenuBtn.addEventListener('click', (e) => {
+    e.stopPropagation(); 
+    toggleMenu();
   });
-}
+
+  // 2. 点击菜单内部的链接时，自动收起菜单
+  const menuLinks = mobileNavPanel.querySelectorAll('a, button');
+  menuLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      setTimeout(() => toggleMenu(false), 150);
+    });
+  });
+
+  // 3. 点击页面其他空白区域，自动收起菜单
+  document.addEventListener('click', (e) => {
+    const isClickInsideMenu = mobileNavPanel.contains(e.target);
+    const isClickBtn = mobileMenuBtn.contains(e.target);
+
+    // 检测只要面板不含有 tw-hidden 并且没包含 md:tw-hidden，就执行关闭
+    const isCurrentlyVisible = !mobileNavPanel.classList.contains('tw-hidden') && !mobileNavPanel.classList.contains('md:tw-hidden');
+
+    if (!isClickInsideMenu && !isClickBtn && isCurrentlyVisible) {
+      toggleMenu(false);
+    }
+  });
+});
 
 // 锚点平滑过渡
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -67,7 +108,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 // 工业级控制台 Iframe 自适应 ResizeObserver 动态 transform 缩放机制
 const initIframeResizer = () => {
   const wrapper = document.getElementById('iframeWrapper');
-  const container = document.getElementById('iframeScaleContainer');
+  const container = document.getElementById('workflowIframe');
   const minWidth = 600;
 
   if (!wrapper || !container) return;
@@ -78,8 +119,9 @@ const initIframeResizer = () => {
       if (currentWidth < minWidth) {
         const scale = currentWidth / minWidth;
         container.style.width = `${minWidth}px`;
-        container.style.height = `${620 / scale}px`;
+        container.style.height = `${500 / scale}px`;
         container.style.transform = `scale(${scale})`;
+        container.style.transformOrigin = 'top left';
       } else {
         container.style.width = '100%';
         container.style.height = '100%';
@@ -107,8 +149,8 @@ function switchScenario(url, description, element) {
 
   // 3. 重置所有标签的样式（恢复到未选中暗色状态）
   document.querySelectorAll('.scenario-tab').forEach(tab => {
-    tab.classList.remove('tw-bg-slate-800/80', 'tw-border-emerald-500/30', 'tw-shadow-md');
-    tab.classList.add('tw-bg-slate-950/40', 'tw-border-slate-800/80');
+    tab.classList.remove('tw-bg-slate-800/80', 'tw-border-emerald-500/30', 'tw-shadow-md', 'tw-text-white');
+    tab.classList.add('tw-bg-slate-950/40', 'tw-border-slate-800/80', 'tw-text-[#94A3B8]');
 
     // 恢复子元素的文字颜色
     const title = tab.querySelector('.font-title');
@@ -116,26 +158,16 @@ function switchScenario(url, description, element) {
       title.classList.remove('tw-text-emerald-400');
       title.classList.add('tw-text-slate-300');
     }
-    const desc = tab.querySelector('p');
-    if (desc) {
-      desc.classList.remove('tw-text-slate-400');
-      desc.slateClass = desc.classList.add('tw-text-slate-500');
-    }
   });
 
   // 4. 为当前点击的标签赋予激活高亮样式
-  element.classList.remove('tw-bg-slate-950/40', 'tw-border-slate-800/80', 'hover:tw-bg-slate-800/40', 'hover:tw-border-slate-700');
-  element.classList.add('tw-bg-slate-800/80', 'tw-border-emerald-500/30', 'tw-shadow-md');
+  element.classList.remove('tw-bg-slate-950/40', 'tw-border-slate-800/80', 'hover:tw-bg-slate-800/40', 'hover:tw-border-slate-700', 'tw-text-[#94A3B8]');
+  element.classList.add('tw-bg-slate-800/80', 'tw-border-emerald-500/30', 'tw-shadow-md', 'tw-text-white');
 
   const activeTitle = element.querySelector('.font-title');
   if (activeTitle) {
     activeTitle.classList.remove('tw-text-slate-300');
     activeTitle.classList.add('tw-text-emerald-400');
-  }
-  const activeDesc = element.querySelector('p');
-  if (activeDesc) {
-    activeDesc.classList.remove('tw-text-slate-500');
-    activeDesc.classList.add('tw-text-slate-400');
   }
 }
 

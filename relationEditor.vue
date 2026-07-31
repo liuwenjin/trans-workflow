@@ -16,7 +16,7 @@
             <h2
               class="tw-text-2xl sm:tw-text-3xl tw-font-bold tw-tracking-tight tw-leading-snug tw-text-slate-900"
             >
-              Agent 依赖关系编排器
+              Skill 依赖关系编排器
             </h2>
             <p class="tw-text-sm tw-text-slate-500 tw-mt-1 tw-font-normal">
               定义并协同编排智能体节点间的数据流与控制链路

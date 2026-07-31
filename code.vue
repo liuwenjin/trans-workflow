@@ -29,7 +29,7 @@
             circle
             class="tw-mr-1 header-action-btn"
             size="small"
-            title="新增可选 Agent"
+            title="新增可选 Skill"
             @click="newAgentDialog()"
           >
             <el-icon>
@@ -50,7 +50,7 @@
             <template #dropdown>
               <el-dropdown-menu data-edit-id="44">
                 <el-dropdown-item @click="handleEditingDialog" data-edit-id="46"
-                  >修改 Agent 列表</el-dropdown-item
+                  >修改 Skill 列表</el-dropdown-item
                 >
                 <slot v-for="(item, index) in apps" :key="item.label">
                   <el-dropdown-item
@@ -175,7 +175,7 @@
                   v-model="accountData.appId"
                   allow-create
                   filterable
-                  placeholder="挑选或输入 Agent ID"
+                  placeholder="挑选或输入 Skill ID"
                   class="tw-w-44 custom-select-no-border"
                 >
                   <el-option
@@ -388,7 +388,7 @@
       v-else
       class="tw-py-16 tw-px-5 tw-max-w-5xl tw-mx-auto tw-bg-white tw-rounded-2xl tw-border-2 tw-border-dashed tw-border-indigo-100 tw-mt-6 empty-panel"
     >
-      <el-empty description="请在上方输入 Agent ID 以加载工作流">
+      <el-empty description="请在上方输入 Skill ID 以加载工作流">
         <template #image>
           <div
             class="tw-flex tw-items-center tw-justify-center tw-w-20 tw-h-20 tw-rounded-full tw-bg-indigo-50 tw-mx-auto"
@@ -401,7 +401,7 @@
 
     <el-dialog
       v-model="showAppConfig"
-      title="可选 Agent 列表"
+      title="可选 Skill 列表"
       width="400px"
       destroy-on-close
     >
@@ -411,7 +411,7 @@
           size="small"
           @click="addItem('apps')"
           data-edit-id="65"
-          >新增 Agent</el-button
+          >新增 Skill</el-button
         >
         <el-button
           type="warning"
@@ -423,7 +423,7 @@
         >
       </div>
       <el-table :data="editingApps" border size="small" data-edit-id="66">
-        <el-table-column label="Agent 名称" width="80px" data-edit-id="67">
+        <el-table-column label="Skill 名称" width="80px" data-edit-id="67">
           <template #default="scope">
             <el-input
               v-model="scope.row.label"
@@ -432,7 +432,7 @@
             />
           </template>
         </el-table-column>
-        <el-table-column label="Agent ID" data-edit-id="70">
+        <el-table-column label="Skill ID" data-edit-id="70">
           <template #default="scope">
             <el-input
               v-model="scope.row.value"
@@ -511,7 +511,7 @@ export default {
       stepData: [],
       currentNodeUrl: "",
       relationEditor: {
-        tips: "编辑 Agent 依赖关系",
+        tips: "编辑 Skill 依赖关系",
         url: "",
         className: "ElementVueItem",
       },
@@ -553,7 +553,7 @@ export default {
         document.body,
         app,
         {
-          title: "新增可用 Agent",
+          title: "新增可用 Skill",
           titleStyle: {
             background: "var(--el-color-primary-light-9)",
             color: "var(--el-color-primary)",
@@ -575,15 +575,15 @@ export default {
                         5
                       ),
                     });
-                    this.$message.success("已添加 Agent: " + params.id);
+                    this.$message.success("已添加 Skill: " + params.id);
                     webCpu.CardItem.dismissMask(document.body);
                   } else {
                     this.$message.error(
-                      "未获取到有效的 Agent ID，请确认后重试"
+                      "未获取到有效的 Skill ID，请确认后重试"
                     );
                   }
                 } else {
-                  this.$message.error("未找到内嵌的 Agent 页面，请确认后重试");
+                  this.$message.error("未找到内嵌的 Skill 页面，请确认后重试");
                 }
               },
             },
@@ -672,7 +672,7 @@ export default {
       };
       let callback = () => {
         this.accountData.allLines = app.card.task.vueItem.allLines || [];
-        this.$message.success("Agent 依赖关系已更新成功。");
+        this.$message.success("Skill 依赖关系已更新成功。");
         webCpu.CardItem.dismissMask(document.body);
       };
       webCpu.renderCardDialog(document.body, app, {
