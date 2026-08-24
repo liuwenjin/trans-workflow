@@ -119,7 +119,7 @@ const initIframeResizer = () => {
       if (currentWidth < minWidth) {
         const scale = currentWidth / minWidth;
         container.style.width = `${minWidth}px`;
-        container.style.height = `${500 / scale}px`;
+        container.style.height = `${minWidth / scale}px`;
         container.style.transform = `scale(${scale})`;
         container.style.transformOrigin = 'top left';
       } else {
